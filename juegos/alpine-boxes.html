@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boxes de Alpine — Prepará el auto de Colapinto</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root{
+  --alpine-blue:#0B2E6B;
+  --alpine-blue-bright:#0090D0;
+  --alpine-pink:#FF87BC;
+  --alpine-pink-deep:#E0559C;
+  --cyan:#21D0C7;
+  --gold:#FFD400;
+  --asphalt:#101319;
+  --asphalt-2:#191E27;
+  --paper:#EDEFF4;
+  --ok:#2BD673;
+  --bad:#FF4D5E;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Titillium Web', Arial, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% -10%, #133163 0%, transparent 55%),
+    radial-gradient(ellipse at 100% 0%, #3a0d2a 0%, transparent 45%),
+    var(--asphalt);
+  color:var(--paper);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ---------- back to hub link ---------- */
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;
+  position:sticky;top:0;left:0;z-index:60;
+  padding:6px 16px;
+  font-size:12px;font-weight:600;color:#9fb3d9;
+  text-decoration:none;background:#05070a;
+  border-bottom:1px solid #232a3a;
+}
+.back-link:hover{color:var(--gold);}
+
+/* ---------- top strip ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  background:linear-gradient(90deg, var(--alpine-blue) 0%, #0a1f4a 60%, #0a0a0a 100%);
+  border-bottom:3px solid var(--alpine-pink);
+  position:sticky;top:27px;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand .mark{
+  font-weight:900;font-size:20px;letter-spacing:2px;
+  background:linear-gradient(90deg, var(--alpine-blue-bright), var(--alpine-pink));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand .sub{font-size:10px;letter-spacing:3px;color:#9fb3d9;text-transform:uppercase;}
+.pitboard{
+  display:flex;align-items:center;gap:10px;
+  background:#05070a;border:2px solid #2a3140;border-radius:6px;
+  padding:6px 12px;
+}
+.pitboard .lbl{font-size:9px;letter-spacing:2px;color:#7c8aa3;text-transform:uppercase;}
+.pitboard .clock{
+  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;
+  color:var(--gold);text-shadow:0 0 8px rgba(255,212,0,.5);
+  min-width:64px;text-align:right;
+}
+
+/* ---------- generic screen ---------- */
+.screen{display:none;padding:22px 16px 70px;max-width:920px;margin:0 auto;}
+.screen.active{display:block;animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---------- intro screen ---------- */
+.checker{
+  height:10px;
+  background-image:repeating-linear-gradient(90deg,#fff 0 14px, #0a0a0a 14px 28px);
+  opacity:.9;margin:18px 0;border-radius:3px;
+}
+.garage{
+  background:linear-gradient(180deg,#232a37,#161b24);
+  border:1px solid #313a4a;border-radius:16px;
+  padding:22px;position:relative;overflow:hidden;
+}
+.garage::before{
+  content:"";position:absolute;inset:0;
+  background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);
+  background-size:26px 26px;pointer-events:none;
+}
+.hero-title{font-weight:900;font-size:clamp(26px,6vw,40px);line-height:1.05;margin:4px 0 6px;}
+.hero-title .accent{color:var(--alpine-pink);}
+.hero-sub{color:#b7c3dd;font-size:15px;margin-bottom:18px;max-width:60ch;}
+
+.crew{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-top:10px;position:relative;z-index:1;}
+.avatar{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.helmet{
+  width:64px;height:64px;border-radius:50% 50% 46% 46%;
+  background:linear-gradient(160deg, var(--alpine-blue-bright), var(--alpine-blue) 70%);
+  border:3px solid #0a0a0a;position:relative;box-shadow:0 6px 14px #0007;
+}
+.helmet.driver{background:linear-gradient(160deg, var(--alpine-pink), var(--alpine-pink-deep) 70%);}
+.helmet::after{
+  content:"";position:absolute;left:8%;right:8%;top:38%;height:34%;
+  background:#0a0a0a;border-radius:6px;
+  box-shadow:inset 0 0 0 2px #2a2a2a;
+}
+.helmet .num{
+  position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  background:#0a0a0a;color:var(--gold);font-weight:800;font-size:10px;
+  padding:1px 6px;border-radius:8px;border:1px solid var(--gold);
+}
+.avatar .name{font-size:11px;color:#9fb3d9;text-align:center;max-width:78px;}
+.avatar .name b{color:#fff;display:block;font-size:12px;}
+
+.bubble{
+  background:#fff;color:#141414;padding:10px 14px;border-radius:14px;
+  font-weight:600;font-size:13px;position:relative;margin-bottom:4px;max-width:220px;
+}
+.bubble::after{
+  content:"";position:absolute;bottom:-8px;left:24px;
+  border-width:8px 8px 0 0;border-style:solid;border-color:#fff transparent transparent transparent;
+}
+
+.btn{
+  appearance:none;border:none;cursor:pointer;font-family:inherit;
+  font-weight:700;letter-spacing:.5px;border-radius:8px;padding:13px 22px;
+  font-size:14px;transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:active{transform:translateY(2px) scale(.98);}
+.btn-primary{
+  background:linear-gradient(90deg, var(--alpine-pink), var(--alpine-pink-deep));
+  color:#1a0a12;box-shadow:0 6px 18px #e0559c55;
+}
+.btn-primary:hover{box-shadow:0 8px 22px #e0559c77;}
+.btn-ghost{
+  background:transparent;border:1.5px solid #3a4356;color:#dfe6f5;
+}
+.btn-ghost:hover{border-color:var(--alpine-blue-bright);}
+.btn-dark{background:#0a0a0a;color:var(--gold);border:1.5px solid var(--gold);}
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+
+/* ---------- modal ---------- */
+.overlay{
+  position:fixed;inset:0;background:#03050acc;backdrop-filter:blur(2px);
+  display:none;align-items:flex-end;justify-content:center;z-index:100;padding:0;
+}
+.overlay.active{display:flex;animation:fadeIn .25s ease;}
+.modal{
+  background:linear-gradient(180deg,#1a2030,#12151d);
+  border:1px solid #2f3850;border-top:4px solid var(--alpine-pink);
+  border-radius:18px 18px 0 0;
+  width:100%;max-width:560px;max-height:88vh;overflow-y:auto;
+  padding:22px 20px 26px;
+}
+@media(min-width:600px){
+  .overlay{align-items:center;}
+  .modal{border-radius:18px;border-top:1px solid #2f3850;border-left:4px solid var(--alpine-pink);}
+}
+.modal h2{margin:0 0 10px;font-size:21px;font-weight:800;}
+.modal p{color:#c3cce0;font-size:14.5px;line-height:1.55;margin:0 0 10px;}
+.eyebrow{
+  font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--alpine-pink);
+  font-weight:700;margin-bottom:6px;display:block;
+}
+
+.example-row{
+  display:flex;align-items:center;gap:8px;margin:10px 0;background:#0d1017;
+  border:1px solid #2a3142;border-radius:8px;padding:8px 10px;
+}
+.example-row .chip{
+  background:#232a3a;border:1px solid #3a4356;border-radius:6px;padding:6px 10px;
+  font-size:12px;font-weight:600;flex:1;text-align:center;
+}
+.example-row .arrow{color:#7c8aa3;}
+.example-row .verdict{font-size:18px;}
+.verdict.ok{color:var(--ok);}
+.verdict.bad{color:var(--bad);}
+
+/* ---------- game screen ---------- */
+.mission-bar{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  background:#151a24;border:1px solid #2a3142;border-radius:10px;
+  padding:10px 14px;margin-bottom:14px;flex-wrap:wrap;
+}
+.mission-bar .txt{font-size:13px;color:#c3cce0;}
+.mission-bar .deadline{font-weight:800;color:var(--gold);}
+
+.board-wrap{
+  background:#0d1017;border:1px solid #2a3142;border-radius:12px;
+  padding:12px 8px 8px;overflow-x:auto;
+}
+.board{display:grid;grid-template-columns:170px 1fr;min-width:900px;}
+.corner{
+  position:sticky;left:0;background:#0d1017;z-index:3;
+  font-size:9px;letter-spacing:1.5px;color:#7c8aa3;text-transform:uppercase;
+  display:flex;align-items:end;padding-bottom:6px;
+}
+.days-header{display:grid;grid-auto-flow:column;grid-auto-columns:46px;}
+.day-lbl{
+  font-size:10px;color:#7c8aa3;text-align:center;padding-bottom:6px;font-weight:600;
+  border-bottom:2px solid #232a3a;
+}
+.day-lbl.active-day{color:var(--gold);}
+
+.task-label{
+  position:sticky;left:0;background:#0d1017;z-index:2;
+  display:flex;flex-direction:column;justify-content:center;gap:2px;
+  padding:6px 10px 6px 4px;border-top:1px solid #1c2230;
+  font-size:12px;
+}
+.task-label .id{
+  display:inline-flex;width:20px;height:20px;border-radius:5px;align-items:center;justify-content:center;
+  font-weight:800;font-size:11px;color:#0a0a0a;margin-right:6px;
+}
+.task-label .nm{font-weight:600;color:#e7ecf7;}
+.task-label .dur{font-size:10px;color:#7c8aa3;}
+.task-label .pred{font-size:10px;color:#5f6c85;}
+
+.row-cells{display:grid;grid-auto-flow:column;grid-auto-columns:46px;border-top:1px solid #1c2230;position:relative;}
+.cell{
+  height:44px;border-right:1px solid #171c27;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.cell:hover{background:#161c28;}
+.cell.filled{cursor:pointer;}
+.block{
+  grid-row:1;height:34px;border-radius:6px;margin:5px 2px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:#0a0a0a;
+  box-shadow:0 3px 8px #0006;
+}
+.block small{font-weight:600;font-size:9px;display:block;}
+.row-cells.error .block{outline:2px solid var(--bad);animation:shake .3s;}
+.row-cells.simming .block{outline:2px solid var(--gold);}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+.legend-hint{font-size:11.5px;color:#7c8aa3;margin-top:10px;}
+
+.footer-actions{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:flex;justify-content:space-between;gap:10px;
+  padding:12px 16px;background:linear-gradient(0deg,#05070ae8 60%,transparent);
+}
+.footer-actions .btn{flex:1;max-width:220px;font-size:13px;}
+
+.banner{
+  border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:12px;
+  display:none;
+}
+.banner.show{display:block;animation:fadeIn .25s ease;}
+.banner.err{background:#3a1420;border:1px solid var(--bad);color:#ffb3ba;}
+.banner.ok{background:#0f3324;border:1px solid var(--ok);color:#9dffce;}
+
+/* lights sequence */
+.lights-overlay{
+  position:fixed;inset:0;background:#000;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:22px;z-index:200;
+}
+.lights-overlay.active{display:flex;}
+.lights-row{display:flex;gap:14px;}
+.light{width:38px;height:38px;border-radius:50%;background:#2a0508;border:3px solid #3a0a10;transition:background .15s;}
+.light.on{background:#FF2D2D;box-shadow:0 0 22px #ff2d2d;}
+.lights-caption{font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:15px;letter-spacing:2px;}
+
+/* result modal */
+.stars{font-size:30px;letter-spacing:6px;margin:6px 0 4px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;}
+.stat{background:#0d1017;border:1px solid #2a3142;border-radius:10px;padding:12px;}
+.stat .n{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:var(--gold);}
+.stat .l{font-size:10.5px;color:#7c8aa3;text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;}
+
+.table-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.table-row{
+  display:flex;align-items:center;gap:10px;background:#0d1017;border:1px solid #2a3142;
+  border-radius:8px;padding:8px 10px;font-size:12.5px;
+}
+.table-row .id{width:22px;height:22px;border-radius:5px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#0a0a0a;}
+.table-row .nm{flex:1;color:#e7ecf7;font-weight:600;}
+.table-row .meta{color:#7c8aa3;font-size:11px;text-align:right;}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← Volver a Exploradores Industriales</a>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">ALPINE</span>
+    <span class="sub">Boxes · Ingeniería de Pista</span>
+  </div>
+  <div class="pitboard">
+    <span class="lbl">Cronómetro</span>
+    <span class="clock" id="clockDisplay">00:00</span>
+  </div>
+</div>
+
+<!-- SCREEN 1: INTRO -->
+<div class="screen active" id="screen-intro">
+  <div class="garage">
+    <span class="eyebrow">Simulador · Equipo Alpine F1</span>
+    <h1 class="hero-title">Preparen el auto de <span class="accent">Colapinto</span>.</h1>
+    <p class="hero-sub">Sos el nuevo ingeniero industrial del box. El equipo necesita organizar la construcción del auto antes de la clasificación — y vos decidís en qué orden se hacen las tareas.</p>
+
+    <div class="crew">
+      <div class="avatar">
+        <div class="helmet"><div class="num">ING</div></div>
+        <div class="name"><b>Jefa de Boxes</b>Planificación</div>
+      </div>
+      <div class="avatar">
+        <div class="helmet"><div class="num">ING</div></div>
+        <div class="name"><b>Mecánico</b>Chasis</div>
+      </div>
+      <div class="avatar" style="margin-right:auto;">
+        <div class="helmet driver"><div class="num">43</div></div>
+        <div class="name"><b>Franco</b>Piloto titular</div>
+      </div>
+      <div class="bubble">¿Sabés qué hace un Ingeniero Industrial en un equipo de F1?</div>
+    </div>
+  </div>
+  <div class="checker"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="openModal('modal-explain')">Jugar</button>
+  </div>
+</div>
+
+<!-- SCREEN 2: GAME -->
+<div class="screen" id="screen-game">
+  <div class="mission-bar">
+    <div class="txt">🏁 Clasificación en Buenos Aires en <span class="deadline" id="deadlineTxt">15 días</span>. Armá el cronograma de construcción.</div>
+    <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="openModal('modal-table')">Ver tabla</button>
+  </div>
+
+  <div class="banner" id="banner"></div>
+
+  <div class="board-wrap">
+    <div class="board" id="board"><!-- filled by JS --></div>
+  </div>
+  <p class="legend-hint">Tocá una celda vacía en la fila de una tarea para ubicarla (ocupa su duración en días). Tocala de nuevo para sacarla.</p>
+</div>
+
+<div class="footer-actions" id="footerActions" style="display:none;">
+  <button class="btn btn-ghost" onclick="resetBoard()">Reiniciar</button>
+  <button class="btn btn-primary" onclick="tryRun()">Probar cronograma</button>
+</div>
+
+<!-- MODAL: explain -->
+<div class="overlay" id="modal-explain">
+  <div class="modal">
+    <span class="eyebrow">Misión</span>
+    <h2>¿Cómo lo ayudás?</h2>
+    <p>Tenés que ordenar las tareas necesarias para construir el auto de Franco. Algunas tareas necesitan que otra termine antes — hay una <b>tabla de precedencias</b> que te muestra qué depende de qué. El objetivo es terminar lo antes posible (vas a ver un cronómetro que te va a torturar 😅).</p>
+    <p>Ejemplo: si la tarea <b>J</b> necesita que <b>H</b> esté lista antes, este orden funciona:</p>
+    <div class="example-row">
+      <div class="chip">H · Comprar tubos</div>
+      <span class="arrow">→</span>
+      <div class="chip">J · Cortar tubos</div>
+      <span class="verdict ok">✔</span>
+    </div>
+    <p>...pero este orden no:</p>
+    <div class="example-row">
+      <div class="chip">J · Cortar tubos</div>
+      <span class="arrow">→</span>
+      <div class="chip">H · Comprar tubos</div>
+      <span class="verdict bad">✘</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="closeModal('modal-explain');openModal('modal-mission')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: mission -->
+<div class="overlay" id="modal-mission">
+  <div class="modal">
+    <span class="eyebrow">Briefing de boxes</span>
+    <h2>Clasificación en Buenos Aires</h2>
+    <p>El equipo Alpine quiere presentar el auto de Franco Colapinto a tiempo para la clasificación. Para eso hay que entregarle a la ingeniera jefa un plan de construcción realista.</p>
+    <p>La clasificación es en <b>15 días</b>. Ayudá al equipo a llegar a tiempo — y si podés, ganale al récord de boxes.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="closeModal('modal-mission');startGame()">Vamos, Alpine</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: table -->
+<div class="overlay" id="modal-table">
+  <div class="modal">
+    <span class="eyebrow">Pizarra del box</span>
+    <h2>Tabla de precedencias</h2>
+    <div class="table-list" id="tableList"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-table')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: result -->
+<div class="overlay" id="modal-result">
+  <div class="modal">
+    <span class="eyebrow" id="resultEyebrow">Resultado</span>
+    <h2 id="resultTitle">¡Cronograma completo!</h2>
+    <div class="stars" id="resultStars">★★★</div>
+    <p id="resultMsg"></p>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" id="statDays">-</div><div class="l">Días usados</div></div>
+      <div class="stat"><div class="n" id="statOptimal">11</div><div class="l">Récord de boxes</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-result');resetBoard()">Reintentar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-result')">Ver tablero</button>
+    </div>
+  </div>
+</div>
+
+<!-- lights sequence overlay -->
+<div class="lights-overlay" id="lightsOverlay">
+  <div class="lights-row" id="lightsRow"></div>
+  <div class="lights-caption" id="lightsCaption">LUCES...</div>
+</div>
+
+<script>
+const DAYS = 16;
+const OPTIMAL = 11;
+const DEADLINE = 15;
+
+const TASKS = [
+  {id:'A', name:'Diseño del monocasco', dur:3, pred:[], color:'#0090D0'},
+  {id:'B', name:'Diseño aerodinámico', dur:3, pred:[], color:'#FF87BC'},
+  {id:'C', name:'Fabricación del chasis', dur:4, pred:['A'], color:'#0B3D91'},
+  {id:'D', name:'Fabricación de alerones', dur:3, pred:['B'], color:'#E0559C'},
+  {id:'E', name:'Programación de telemetría', dur:3, pred:[], color:'#21D0C7'},
+  {id:'F', name:'Pintura y calcos Alpine', dur:2, pred:['C'], color:'#FF2D78'},
+  {id:'G', name:'Ensamble final', dur:2, pred:['D','E','F'], color:'#FFD400'},
+];
+
+let placements = {}; // id -> startDay (1-indexed) or null
+
+function taskById(id){ return TASKS.find(t=>t.id===id); }
+
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+function startGame(){
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  document.getElementById('footerActions').style.display = 'flex';
+  document.getElementById('deadlineTxt').textContent = DEADLINE + ' días';
+  buildTable();
+  buildBoard();
+}
+
+function buildTable(){
+  const list = document.getElementById('tableList');
+  list.innerHTML = '';
+  TASKS.forEach(t=>{
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    const predTxt = t.pred.length ? 'Necesita: ' + t.pred.join(', ') : 'Sin dependencias';
+    row.innerHTML = `<div class="id" style="background:${t.color}">${t.id}</div>
+      <div class="nm">${t.name}</div>
+      <div class="meta">${predTxt}<br>${t.dur} día${t.dur>1?'s':''}</div>`;
+    list.appendChild(row);
+  });
+}
+
+function buildBoard(){
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  // corner cell
+  const corner = document.createElement('div');
+  corner.className = 'corner';
+  corner.textContent = 'Tarea';
+  board.appendChild(corner);
+
+  // days header
+  const daysHeader = document.createElement('div');
+  daysHeader.className = 'days-header';
+  daysHeader.id = 'daysHeader';
+  for(let d=1; d<=DAYS; d++){
+    const lbl = document.createElement('div');
+    lbl.className = 'day-lbl';
+    lbl.textContent = 'D'+d;
+    lbl.id = 'daylbl-'+d;
+    daysHeader.appendChild(lbl);
+  }
+  board.appendChild(daysHeader);
+
+  TASKS.forEach(t=>{
+    const label = document.createElement('div');
+    label.className = 'task-label';
+    label.innerHTML = `<div><span class="id" style="background:${t.color}">${t.id}</span><span class="nm">${t.name}</span></div>
+      <div class="dur">${t.dur} día${t.dur>1?'s':''} ${t.pred.length? '· requiere '+t.pred.join(', ') : '· sin requisitos'}</div>`;
+    board.appendChild(label);
+
+    const rowCells = document.createElement('div');
+    rowCells.className = 'row-cells';
+    rowCells.id = 'row-'+t.id;
+    for(let d=1; d<=DAYS; d++){
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = `cell-${t.id}-${d}`;
+      cell.onclick = ()=>handleCellClick(t.id, d);
+      rowCells.appendChild(cell);
+    }
+    board.appendChild(rowCells);
+  });
+
+  renderPlacements();
+}
+
+function handleCellClick(taskId, day){
+  const t = taskById(taskId);
+  if(placements[taskId] != null){
+    // clicking anywhere on its own row removes it
+    placements[taskId] = null;
+    renderPlacements();
+    return;
+  }
+  if(day + t.dur - 1 > DAYS){
+    flashBanner('err', `${t.name} no entra a partir del día ${day} (dura ${t.dur} días). Probá más a la izquierda.`);
+    return;
+  }
+  placements[taskId] = day;
+  renderPlacements();
+}
+
+function renderPlacements(){
+  TASKS.forEach(t=>{
+    const row = document.getElementById('row-'+t.id);
+    if(!row) return;
+    row.classList.remove('error');
+    // clear
+    for(let d=1; d<=DAYS; d++){
+      const cell = document.getElementById(`cell-${t.id}-${d}`);
+      cell.innerHTML = '';
+      cell.classList.remove('filled');
+    }
+    const start = placements[t.id];
+    if(start == null) return;
+    const cell = document.getElementById(`cell-${t.id}-${start}`);
+    cell.classList.add('filled');
+    const block = document.createElement('div');
+    block.className = 'block';
+    block.style.background = t.color;
+    block.style.width = (t.dur*46 - 4) + 'px';
+    block.innerHTML = `${t.id}<small>${t.dur}d</small>`;
+    cell.appendChild(block);
+  });
+}
+
+function resetBoard(){
+  placements = {};
+  renderPlacements();
+  hideBanner();
+}
+
+function flashBanner(kind, msg){
+  const b = document.getElementById('banner');
+  b.className = 'banner show ' + kind;
+  b.textContent = msg;
+}
+function hideBanner(){
+  document.getElementById('banner').classList.remove('show');
+}
+
+function validate(){
+  const missing = TASKS.filter(t=>placements[t.id]==null);
+  if(missing.length){
+    flashBanner('err', 'Faltan ubicar: ' + missing.map(t=>t.id).join(', '));
+    return null;
+  }
+  let errors = [];
+  TASKS.forEach(t=>{
+    document.getElementById('row-'+t.id).classList.remove('error');
+    t.pred.forEach(pid=>{
+      const p = taskById(pid);
+      const requiredStart = placements[pid] + p.dur;
+      if(placements[t.id] < requiredStart){
+        errors.push(`${t.id} (${t.name}) necesita que ${pid} termine antes (día ${requiredStart} como mínimo).`);
+        document.getElementById('row-'+t.id).classList.add('error');
+      }
+    });
+  });
+  if(errors.length){
+    flashBanner('err', errors[0] + (errors.length>1 ? ` (+${errors.length-1} más)` : ''));
+    return null;
+  }
+  hideBanner();
+  const makespan = Math.max(...TASKS.map(t=> placements[t.id] + t.dur - 1));
+  return makespan;
+}
+
+function tryRun(){
+  const makespan = validate();
+  if(makespan == null) return;
+  runLightsThenSim(makespan);
+}
+
+function runLightsThenSim(makespan){
+  const overlay = document.getElementById('lightsOverlay');
+  const row = document.getElementById('lightsRow');
+  const caption = document.getElementById('lightsCaption');
+  row.innerHTML = '';
+  for(let i=0;i<5;i++){
+    const l = document.createElement('div');
+    l.className='light';
+    l.id='light-'+i;
+    row.appendChild(l);
+  }
+  overlay.classList.add('active');
+  caption.textContent = 'PREPARANDO BOX...';
+  let lit = 0;
+  const litInterval = setInterval(()=>{
+    if(lit<5){
+      document.getElementById('light-'+lit).classList.add('on');
+      lit++;
+    } else {
+      clearInterval(litInterval);
+      setTimeout(()=>{
+        // lights out
+        for(let i=0;i<5;i++) document.getElementById('light-'+i).classList.remove('on');
+        caption.textContent = '¡LUCES FUERA, VAMOS!';
+        setTimeout(()=>{
+          overlay.classList.remove('active');
+          simulate(makespan);
+        }, 500);
+      }, 500);
+    }
+  }, 260);
+}
+
+function simulate(makespan){
+  const clockEl = document.getElementById('clockDisplay');
+  let day = 0;
+  const stepMs = 130;
+  document.querySelectorAll('.days-header .day-lbl').forEach(el=>el.classList.remove('active-day'));
+  const interval = setInterval(()=>{
+    day++;
+    const mm = String(Math.floor(day/60)).padStart(2,'0');
+    const ss = String(day%60).padStart(2,'0');
+    clockEl.textContent = mm+':'+ss;
+    document.querySelectorAll('.days-header .day-lbl').forEach(el=>el.classList.remove('active-day'));
+    const lbl = document.getElementById('daylbl-'+day);
+    if(lbl) lbl.classList.add('active-day');
+    TASKS.forEach(t=>{
+      const row = document.getElementById('row-'+t.id);
+      const start = placements[t.id];
+      if(day>=start && day < start+t.dur){
+        row.classList.add('simming');
+      } else {
+        row.classList.remove('simming');
+      }
+    });
+    if(day>=makespan){
+      clearInterval(interval);
+      TASKS.forEach(t=>document.getElementById('row-'+t.id).classList.remove('simming'));
+      showResult(makespan);
+    }
+  }, stepMs);
+}
+
+function showResult(makespan){
+  document.getElementById('statDays').textContent = makespan;
+  const stars = makespan<=OPTIMAL ? 3 : makespan<=OPTIMAL+3 ? 2 : 1;
+  document.getElementById('resultStars').textContent = '★'.repeat(stars) + '☆'.repeat(3-stars);
+
+  const title = document.getElementById('resultTitle');
+  const msg = document.getElementById('resultMsg');
+  const eyebrow = document.getElementById('resultEyebrow');
+
+  if(makespan <= DEADLINE){
+    eyebrow.textContent = 'Clasificación asegurada';
+    if(makespan<=OPTIMAL){
+      title.textContent = '¡Récord de boxes, Franco corre!';
+      msg.textContent = `Armaste el auto en ${makespan} días, igualando el mejor tiempo posible del equipo. La ingeniera jefa está impresionada — así se planifica un proyecto.`;
+    } else {
+      title.textContent = '¡Llegaste a tiempo para la clasificación!';
+      msg.textContent = `El auto quedó listo en ${makespan} días, antes de los ${DEADLINE} días límite. El récord del box es de ${OPTIMAL} días — reordenando algunas tareas en paralelo podés bajar el tiempo.`;
+    }
+  } else {
+    eyebrow.textContent = 'Se complicó el cronograma';
+    title.textContent = 'Franco se queda sin clasificar...';
+    msg.textContent = `El plan tardó ${makespan} días, más de los ${DEADLINE} disponibles. Revisá qué tareas podrían hacerse en paralelo en vez de una detrás de la otra.`;
+  }
+  openModal('modal-result');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sos el Jefe de Planta de Mercado Libre</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap');
+
+:root{
+  --meli-yellow:#FFE600;
+  --meli-yellow-deep:#FFD100;
+  --meli-blue:#3483FA;
+  --meli-blue-deep:#2968C8;
+  --ink:#1a1f36;
+  --muted:#666e80;
+  --bg:#F5F6FA;
+  --card:#FFFFFF;
+  --line:#E6E9F0;
+  --ok:#00A650;
+  --mid:#FF9900;
+  --bad:#E53935;
+  --radius:14px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Rubik', Arial, sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+}
+
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 16px;
+  font-size:12.5px;font-weight:600;color:var(--meli-blue-deep);
+  text-decoration:none;background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.back-link:hover{color:var(--meli-blue);}
+
+.topbar{
+  background:linear-gradient(90deg, var(--meli-yellow) 0%, var(--meli-yellow-deep) 100%);
+  padding:14px 18px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  border-bottom:3px solid var(--meli-blue);
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand .box{font-size:26px;}
+.brand .txt{display:flex;flex-direction:column;line-height:1.15;}
+.brand .txt b{font-size:15px;font-weight:800;color:var(--ink);}
+.brand .txt span{font-size:11px;color:#5b5200;letter-spacing:.5px;text-transform:uppercase;font-weight:600;}
+
+.points-pill{
+  background:var(--ink);color:var(--meli-yellow);
+  font-weight:800;font-size:14px;border-radius:20px;
+  padding:8px 16px;display:flex;align-items:center;gap:6px;
+}
+
+/* rank bar */
+.rankbar-wrap{
+  background:#fff;border-bottom:1px solid var(--line);
+  padding:10px 16px;
+}
+.rankbar{
+  display:flex;max-width:900px;margin:0 auto;gap:4px;
+}
+.rank-seg{
+  flex:1;text-align:center;padding:7px 2px;border-radius:8px;
+  font-size:10.5px;font-weight:700;color:#a7adba;background:#eef0f5;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  transition:all .25s ease;
+  border:2px solid transparent;
+}
+.rank-seg .em{font-size:15px;}
+.rank-seg.done{background:#e8f8ee;color:var(--ok);}
+.rank-seg.current{background:var(--meli-blue);color:#fff;border-color:var(--meli-blue-deep);transform:scale(1.05);box-shadow:0 4px 10px #3483fa55;}
+
+.rankup-toast{
+  position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:var(--ink);color:var(--meli-yellow);font-weight:800;font-size:14px;
+  padding:12px 22px;border-radius:30px;box-shadow:0 8px 24px #0004;
+  opacity:0;pointer-events:none;transition:all .35s ease;z-index:300;
+  display:flex;align-items:center;gap:8px;
+}
+.rankup-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.wrap{max-width:900px;margin:0 auto;padding:20px 16px 60px;}
+
+.screen{display:none;}
+.screen.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* intro */
+.intro-card{
+  background:var(--card);border-radius:var(--radius);
+  padding:28px 24px;border:1px solid var(--line);
+  box-shadow:0 8px 24px #0000000d;text-align:center;
+}
+.intro-card .emoji{font-size:52px;margin-bottom:6px;}
+.intro-card h1{font-size:clamp(24px,5vw,32px);font-weight:900;margin:6px 0 12px;}
+.intro-card p{color:var(--muted);font-size:15.5px;line-height:1.6;max-width:60ch;margin:0 auto 22px;}
+.intro-rank{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#eef0f5;border-radius:20px;padding:8px 16px;font-weight:700;font-size:13px;
+  margin-bottom:20px;color:var(--muted);
+}
+
+.btn{
+  appearance:none;border:none;cursor:pointer;font-family:inherit;
+  font-weight:800;letter-spacing:.2px;border-radius:12px;padding:16px 26px;
+  font-size:15px;transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:active{transform:translateY(2px) scale(.98);}
+.btn-primary{
+  background:var(--meli-blue);color:#fff;
+  box-shadow:0 6px 18px #3483fa55;
+}
+.btn-primary:hover{box-shadow:0 8px 22px #3483fa77;}
+.btn-primary:disabled{opacity:.5;cursor:default;box-shadow:none;}
+.btn-ghost{
+  background:#fff;border:1.5px solid var(--line);color:var(--ink);
+}
+.btn-ghost:hover{border-color:var(--meli-blue);}
+
+/* round header */
+.round-meta{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  margin-bottom:16px;
+}
+.round-count{font-size:13px;font-weight:700;color:var(--muted);}
+.type-tag{
+  font-size:12px;font-weight:800;padding:6px 14px;border-radius:20px;
+}
+.type-tag.diagnostico{background:#e8f0fe;color:var(--meli-blue-deep);}
+.type-tag.decision{background:#fff4e0;color:#b56a00;}
+.type-tag.final{background:#fdeaea;color:#b3261e;}
+
+/* situation card */
+.round-card{
+  background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+  padding:22px 20px;box-shadow:0 8px 24px #0000000d;
+}
+.round-card .emoji{font-size:38px;margin-bottom:6px;display:block;}
+.round-card h2{font-size:clamp(19px,4vw,24px);font-weight:800;margin:2px 0 10px;}
+.round-card .situation{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:14px;}
+.round-card .question{font-weight:700;font-size:15.5px;margin-bottom:16px;color:var(--ink);}
+
+.options{display:flex;flex-direction:column;gap:12px;}
+.opt-btn{
+  display:flex;align-items:flex-start;gap:12px;text-align:left;
+  background:#fff;border:2px solid var(--line);border-radius:12px;
+  padding:14px 16px;cursor:pointer;font-family:inherit;
+  transition:all .15s ease;
+}
+.opt-btn:hover:not(.locked){border-color:var(--meli-blue);background:#f7faff;}
+.opt-btn .lbl{
+  flex:none;width:30px;height:30px;border-radius:8px;background:var(--ink);color:var(--meli-yellow);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;
+}
+.opt-btn .body{flex:1;}
+.opt-btn .txt{font-weight:600;font-size:14.5px;color:var(--ink);}
+.opt-btn .icon{flex:none;font-size:20px;}
+.opt-btn.locked{cursor:default;}
+.opt-btn.selected{border-color:var(--meli-blue);background:#eef4ff;}
+.opt-btn.mark-ok{border-color:var(--ok);background:#eafaf0;}
+.opt-btn.mark-mid{border-color:var(--mid);background:#fff6e8;}
+.opt-btn.mark-bad{border-color:var(--bad);background:#fdecec;}
+
+.pros-cons{margin-top:8px;display:none;flex-direction:column;gap:4px;font-size:13px;}
+.pros-cons.show{display:flex;}
+.pros-cons .pro{color:var(--ok);}
+.pros-cons .con{color:#b3261e;}
+
+/* feedback panel */
+.feedback{
+  margin-top:18px;padding-top:18px;border-top:2px dashed var(--line);
+  display:none;
+}
+.feedback.show{display:block;animation:fadeIn .3s ease;}
+.feedback .who{
+  font-size:11.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--meli-blue-deep);margin-bottom:8px;display:block;
+}
+.feedback p{font-size:14.5px;line-height:1.6;color:var(--ink);margin:0 0 10px;}
+.concept-chip{
+  display:inline-block;background:var(--meli-yellow);color:var(--ink);
+  font-weight:800;font-size:12.5px;padding:8px 14px;border-radius:10px;margin-top:4px;
+}
+.points-earned{
+  display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:13.5px;
+  background:var(--ink);color:var(--meli-yellow);padding:6px 14px;border-radius:20px;margin-bottom:12px;
+}
+
+.next-row{margin-top:20px;display:flex;justify-content:flex-end;}
+
+/* final screen */
+.final-card{
+  background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+  padding:32px 24px;text-align:center;box-shadow:0 8px 24px #0000000d;
+}
+.final-card .badge-emoji{font-size:64px;}
+.final-card h1{font-size:clamp(22px,5vw,30px);font-weight:900;margin:8px 0 4px;}
+.final-card .rank-name{color:var(--meli-blue-deep);}
+.final-score{
+  font-family:inherit;font-weight:800;font-size:20px;color:var(--muted);margin:6px 0 18px;
+}
+.final-score b{color:var(--ink);font-size:26px;}
+.final-card p{font-size:15px;line-height:1.6;color:var(--muted);max-width:56ch;margin:0 auto 22px;}
+.final-progress{margin:0 auto 22px;max-width:520px;}
+
+@media (max-width:520px){
+  .opt-btn{flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← Volver a Exploradores Industriales</a>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="box">📦</span>
+    <div class="txt">
+      <b>Jefe de Planta</b>
+      <span>Mercado Libre · Centro de distribución</span>
+    </div>
+  </div>
+  <div class="points-pill">⭐ <span id="pointsDisplay">0</span>/17</div>
+</div>
+
+<div class="rankbar-wrap">
+  <div class="rankbar" id="rankBar"></div>
+</div>
+
+<div class="rankup-toast" id="rankupToast"></div>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-card">
+      <div class="emoji">🏭</div>
+      <h1>Sos el Jefe de Planta de Mercado Libre</h1>
+      <p>Es tu primer día como Jefe/a de Planta en un centro de distribución de Mercado Libre. Hoy hay que despachar 50.000 paquetes. En cada ronda va a aparecer un problema real de la operación — tu equipo vota qué harían, y después vemos qué haría (y por qué) un ingeniero industrial de verdad.</p>
+      <div class="intro-rank">🔧 Rango inicial: Operario/a · 0 puntos</div>
+      <div>
+        <button class="btn btn-primary" onclick="startGame()">Empezar mi primer día</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="round-meta">
+      <span class="round-count" id="roundCount">Ronda 1 de 9</span>
+      <span class="type-tag" id="typeTag"></span>
+    </div>
+    <div class="round-card" id="roundCard"><!-- filled by JS --></div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="screen" id="screen-final">
+    <div class="final-card">
+      <div class="badge-emoji" id="finalEmoji">🏆</div>
+      <h1>Rango final: <span class="rank-name" id="finalRankName">Jefe/a de Planta</span></h1>
+      <div class="final-score"><b id="finalScore">0</b>/17 puntos</div>
+      <div class="final-progress"><div class="rankbar" id="finalRankBar"></div></div>
+      <p id="finalText"></p>
+      <button class="btn btn-primary" onclick="restartGame()">Jugar de nuevo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const RANKS = [
+  {min:0,  max:4,  name:'Operario/a',       emoji:'🔧', text:'Hoy sobreviviste tu primer día — y eso ya es mucho. La ingeniería industrial se aprende resolviendo problemas reales, ronda tras ronda.'},
+  {min:5,  max:8,  name:'Supervisor/a',     emoji:'📋', text:'Empezás a ver los procesos con otros ojos: ya no solo apagás incendios, entendés por qué se producen.'},
+  {min:9,  max:11, name:'Coordinador/a',    emoji:'📊', text:'Sabés priorizar y organizar recursos bajo presión — la mitad del trabajo de un ingeniero industrial es justamente eso.'},
+  {min:12, max:14, name:'Gerente',          emoji:'🧭', text:'Tomás buenas decisiones con datos y pensás en el sistema completo, no solo en el problema del momento.'},
+  {min:15, max:17, name:'Jefe/a de Planta', emoji:'🏆', text:'Pensás como un ingeniero industrial: identificás restricciones, priorizás con criterio y sabés que a veces no hay una única respuesta correcta. Bienvenido/a al rol.'},
+];
+
+function getRank(points){
+  return RANKS.find(r=>points>=r.min && points<=r.max) || RANKS[RANKS.length-1];
+}
+function getRankIndex(points){
+  return RANKS.findIndex(r=>points>=r.min && points<=r.max);
+}
+
+const ROUNDS = [
+  {
+    n:1, icon:'📦', type:'diagnostico',
+    title:'Se rompe una cinta transportadora',
+    situation:'Se rompe una cinta transportadora en plena mañana. El flujo de paquetes hacia el sector de despacho se corta.',
+    question:'¿Qué hacés?',
+    options:[
+      {label:'A', text:'Esperar a que mantenimiento la repare', points:1},
+      {label:'B', text:'Reorganizar el flujo por otra línea', points:2},
+      {label:'C', text:'Frenar toda la operación', points:0},
+    ],
+    explanation:'Un ingeniero industrial diseña los procesos pensando en que algo se va a romper tarde o temprano. Por eso conviene tener flexibilidad y rutas alternativas (otras líneas, otros sectores) para no depender de un solo camino. Frenar todo paraliza la planta entera por un problema local; esperar sin más deja capacidad ociosa que se podría estar usando. Reorganizar el flujo mantiene la operación funcionando mientras se resuelve el problema real.',
+    concept:'Redundancia y flexibilidad de procesos.'
+  },
+  {
+    n:2, icon:'🚚', type:'diagnostico',
+    title:'Llegan el doble de pedidos de lo esperado',
+    situation:'Un pico de ventas hace que lleguen el doble de pedidos de lo esperado para hoy.',
+    question:'¿Qué priorizás primero?',
+    options:[
+      {label:'A', text:'Velocidad', points:1},
+      {label:'B', text:'Calidad', points:1},
+      {label:'C', text:'Organización del equipo', points:2},
+    ],
+    explanation:'Ante una demanda inesperada, el primer instinto suele ser "apurar todo" o "cuidar cada detalle", pero sin organizar la capacidad disponible (quién hace qué, en qué orden, con qué recursos) terminás perdiendo velocidad Y calidad al mismo tiempo. Reorganizar el equipo primero permite sostener ambas cosas después.',
+    concept:'Gestión de la capacidad antes que la urgencia.'
+  },
+  {
+    n:3, icon:'👥', type:'diagnostico',
+    title:'Faltó el 20% del personal',
+    situation:'Hoy faltó el 20% del personal por distintos motivos, y hay que seguir despachando.',
+    question:'¿Cómo reorganizás la operación?',
+    options:[
+      {label:'A', text:'Pedirle horas extra al resto del equipo', points:1},
+      {label:'B', text:'Redistribuir tareas priorizando las estaciones que frenan todo el proceso', points:2},
+      {label:'C', text:'Mantener el mismo plan del día y aceptar que se va a atrasar', points:0},
+    ],
+    explanation:'No todas las estaciones de trabajo son igual de críticas: si falta gente en una estación que no frena el resto del proceso, no pasa gran cosa. Pero si falta en la estación que es cuello de botella (la que marca el ritmo de todo el sistema), ahí hay que concentrar los recursos. Pedir horas extra a ciegas puede terminar reforzando una estación que no lo necesitaba.',
+    concept:'Teoría de las restricciones — identificar el cuello de botella.'
+  },
+  {
+    n:4, icon:'📈', type:'diagnostico',
+    title:'Reclamos porque los paquetes llegan tarde',
+    situation:'Empiezan a llegar reclamos de clientes porque muchos paquetes están llegando tarde.',
+    question:'¿Qué indicador mirarías primero para entender el problema?',
+    options:[
+      {label:'A', text:'Tiempo de ciclo por pedido — cuánto tarda cada paquete en recorrer todo el proceso', points:2},
+      {label:'B', text:'Cantidad total de paquetes despachados por día', points:1},
+      {label:'C', text:'Costo operativo diario', points:0},
+    ],
+    explanation:'Si el problema es que llegan tarde, el indicador que explica eso es cuánto tiempo pasa cada pedido dentro del proceso (tiempo de ciclo). El volumen total te dice si estás despachando mucho o poco, pero no dónde se generan las demoras. El costo es importante, pero no está directamente relacionado con el reclamo puntual de los clientes.',
+    concept:'Elegir el KPI (indicador clave) correcto para cada problema.'
+  },
+  {
+    n:5, icon:'♻️', type:'diagnostico',
+    title:'Te piden reducir costos sin afectar al cliente',
+    situation:'La gerencia general pide bajar los costos operativos del centro de distribución, sin que el cliente lo note.',
+    question:'¿Qué hacés?',
+    options:[
+      {label:'A', text:'Bajar la calidad de los materiales de embalaje', points:0},
+      {label:'B', text:'Optimizar rutas internas y eliminar tiempos muertos del proceso', points:2},
+      {label:'C', text:'Despedir personal', points:0},
+    ],
+    explanation:'Bajar la calidad del embalaje o cortar personal de golpe sí afecta al cliente, tarde o temprano (paquetes dañados, demoras, peor servicio). La forma de reducir costos sin que se note es sacarle "grasa" al proceso: tiempos muertos, recorridos innecesarios, movimientos que no agregan valor. Eso es directamente el trabajo de un ingeniero industrial.',
+    concept:'Mejora de procesos vs. recortar alcance o calidad.'
+  },
+  {
+    n:6, icon:'💰', type:'decision',
+    title:'Solo alcanza para UNA mejora',
+    situation:'Tenés presupuesto para hacer una sola mejora este trimestre. ¿Cuál elegís?',
+    question:'',
+    options:[
+      {label:'A', text:'Comprar más robots', ventaja:'Acelera mucho el proceso y reduce errores manuales.', desventaja:'Inversión alta, no resuelve problemas de organización o de personal.'},
+      {label:'B', text:'Capacitar a los empleados', ventaja:'Mejora calidad y motivación con costo relativamente bajo.', desventaja:'Los resultados tardan más en verse, depende de que el proceso ya esté bien diseñado.'},
+      {label:'C', text:'Ampliar el depósito', ventaja:'Resuelve problemas de espacio y permite crecer a futuro.', desventaja:'Inversión muy alta y no soluciona nada operativo en lo inmediato.'},
+      {label:'D', text:'Mejorar el software de gestión', ventaja:'Mejora la visibilidad y planificación de toda la operación.', desventaja:'Requiere tiempo de adaptación del equipo y no reemplaza mejoras físicas si el cuello de botella es de espacio o de gente.'},
+    ],
+    closing:'No hay una respuesta "correcta" — depende de cuál sea el problema más urgente de la planta en ese momento. En ingeniería industrial, muchas veces la mejor decisión es "depende", y lo importante es poder justificarla con datos.'
+  },
+  {
+    n:7, icon:'🔍', type:'diagnostico',
+    title:'Aumentan los errores de picking',
+    situation:'Empiezan a aumentar los errores al preparar los pedidos (mandan productos equivocados o incompletos).',
+    question:'¿Qué hacés?',
+    options:[
+      {label:'A', text:'Poner más cámaras para vigilar a los operarios', points:0},
+      {label:'B', text:'Rediseñar el proceso de picking y capacitar en el nuevo método', points:2},
+      {label:'C', text:'Sumar más personal de control de calidad al final de la línea', points:1},
+    ],
+    explanation:'Poner cámaras no arregla el proceso, solo vigila que falle de la misma manera. Agregar control al final detecta errores pero no evita que sigan ocurriendo (y cuesta más). Rediseñar el proceso ataca la causa raíz del problema: si el método de picking está mal diseñado, los errores van a seguir pasando hasta que se corrija.',
+    concept:'Atacar la causa raíz, no solo controlar el síntoma (poka-yoke).'
+  },
+  {
+    n:8, icon:'🎄', type:'decision',
+    title:'Pico de fin de año (Hot Sale / Navidad)',
+    situation:'Se viene el pico de pedidos más grande del año. Tenés que decidir cómo absorber la demanda extra.',
+    question:'',
+    options:[
+      {label:'A', text:'Horas extra al equipo actual', ventaja:'Rápido de implementar, no hay curva de aprendizaje.', desventaja:'Cansancio del equipo, más errores si se extiende muchos días.'},
+      {label:'B', text:'Contratar personal temporario', ventaja:'Suma capacidad real sin agotar al equipo estable.', desventaja:'Hay que capacitarlos rápido, al principio rinden menos.'},
+      {label:'C', text:'Tercerizar parte de la operación a un operador logístico externo', ventaja:'Capacidad casi inmediata, sin contratar ni capacitar.', desventaja:'Menos control sobre la calidad del servicio, depende de un tercero.'},
+      {label:'D', text:'Reducir temporalmente el mix de productos que se despachan', ventaja:'Simplifica el proceso y reduce errores en el pico más exigente.', desventaja:'Algunos clientes no van a poder comprar ciertos productos durante el pico.'},
+    ],
+    closing:'Las empresas reales suelen combinar varias de estas opciones al mismo tiempo. No existe una única forma correcta de absorber un pico de demanda — existe la que mejor se ajusta a los recursos, el tiempo y el riesgo que la empresa está dispuesta a asumir.'
+  },
+  {
+    n:9, icon:'🏆', type:'final',
+    title:'El día antes de Navidad',
+    situation:'Es el último día antes de Navidad. Hay que despachar 50.000 paquetes, falta personal, se rompió una cinta transportadora y llegaron reclamos por demoras — todo junto. Solo podés tomar una acción inmediata y prioritaria.',
+    question:'¿Qué hacés?',
+    options:[
+      {label:'A', text:'Identificar cuál es el cuello de botella en este momento y concentrar ahí todos los recursos disponibles', points:3},
+      {label:'B', text:'Repartir el problema en partes iguales entre todas las estaciones', points:1},
+      {label:'C', text:'Priorizar despachar rápido aunque se desordene el picking', points:0},
+    ],
+    explanation:'Cuando hay varios problemas a la vez, repartir esfuerzos "en partes iguales" suena justo pero no es eficiente: hay una restricción que está limitando todo el sistema, y es ahí donde hay que concentrarse primero. Despachar rápido sin orden genera más errores y más reclamos después. Un buen ingeniero industrial, bajo presión, no ataca todos los frentes a la vez — prioriza el que más impacto tiene en el sistema completo.',
+    concept:'Pensamiento sistémico — priorizar la restricción que más limita al conjunto.'
+  },
+];
+
+const TYPE_LABELS = {
+  diagnostico: {cls:'diagnostico', txt:'🔍 Diagnóstico'},
+  decision:    {cls:'decision',    txt:'⚖️ Decisión'},
+  final:       {cls:'final',       txt:'🏆 Reto final'},
+};
+
+let currentIdx = 0;
+let totalPoints = 0;
+let answered = false;
+let lastRankIdx = 0;
+
+function renderRankBar(points, targetId){
+  const el = document.getElementById(targetId);
+  const rankIdx = getRankIndex(points);
+  el.innerHTML = RANKS.map((r,i)=>{
+    let cls = 'rank-seg';
+    if(i < rankIdx) cls += ' done';
+    if(i === rankIdx) cls += ' current';
+    return `<div class="${cls}"><span class="em">${r.emoji}</span><span>${r.name}</span></div>`;
+  }).join('');
+}
+
+function updatePointsDisplay(){
+  document.getElementById('pointsDisplay').textContent = totalPoints;
+  renderRankBar(totalPoints, 'rankBar');
+}
+
+function maybeShowRankUp(){
+  const idx = getRankIndex(totalPoints);
+  if(idx > lastRankIdx){
+    const r = RANKS[idx];
+    const toast = document.getElementById('rankupToast');
+    toast.textContent = `${r.emoji} ¡Ascendiste a ${r.name}!`;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 2200);
+  }
+  lastRankIdx = idx;
+}
+
+function startGame(){
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  currentIdx = 0;
+  totalPoints = 0;
+  lastRankIdx = 0;
+  updatePointsDisplay();
+  renderRound();
+}
+
+function renderRound(){
+  const round = ROUNDS[currentIdx];
+  answered = false;
+  document.getElementById('roundCount').textContent = `Ronda ${round.n} de 9`;
+  const tag = TYPE_LABELS[round.type];
+  const tagEl = document.getElementById('typeTag');
+  tagEl.className = 'type-tag ' + tag.cls;
+  tagEl.textContent = tag.txt;
+
+  const optionsHtml = round.options.map((opt, i)=>{
+    if(round.type === 'decision'){
+      return `<button class="opt-btn" id="opt-${i}" onclick="selectOption(${i})">
+        <span class="lbl">${opt.label}</span>
+        <span class="body">
+          <span class="txt">${opt.text}</span>
+          <div class="pros-cons" id="proscons-${i}">
+            <span class="pro">✅ ${opt.ventaja}</span>
+            <span class="con">⚠️ ${opt.desventaja}</span>
+          </div>
+        </span>
+      </button>`;
+    }
+    return `<button class="opt-btn" id="opt-${i}" onclick="selectOption(${i})">
+      <span class="lbl">${opt.label}</span>
+      <span class="body"><span class="txt">${opt.text}</span></span>
+      <span class="icon" id="icon-${i}"></span>
+    </button>`;
+  }).join('');
+
+  document.getElementById('roundCard').innerHTML = `
+    <span class="emoji">${round.icon}</span>
+    <h2>${round.title}</h2>
+    <p class="situation">${round.situation}</p>
+    ${round.question ? `<p class="question">${round.question}</p>` : ''}
+    <div class="options">${optionsHtml}</div>
+    <div class="feedback" id="feedback"></div>
+  `;
+}
+
+function selectOption(i){
+  if(answered) return;
+  answered = true;
+  const round = ROUNDS[currentIdx];
+  const opt = round.options[i];
+
+  document.querySelectorAll('.opt-btn').forEach(b=>b.classList.add('locked'));
+  document.getElementById(`opt-${i}`).classList.add('selected');
+
+  let earned = 0;
+  let feedbackHtml = '';
+
+  if(round.type === 'decision'){
+    earned = 1;
+    round.options.forEach((o, idx)=>{
+      document.getElementById(`proscons-${idx}`).classList.add('show');
+    });
+    feedbackHtml = `
+      <span class="points-earned">+1 punto por participar</span>
+      <span class="who">Cierre de la ronda</span>
+      <p>${round.closing}</p>
+    `;
+  } else {
+    earned = opt.points;
+    const maxPoints = Math.max(...round.options.map(o=>o.points));
+    round.options.forEach((o, idx)=>{
+      const iconEl = document.getElementById(`icon-${idx}`);
+      let icon = '', markCls = '';
+      if(o.points === maxPoints){ icon = '✅'; markCls = 'mark-ok'; }
+      else if(o.points === 0){ icon = '❌'; markCls = 'mark-bad'; }
+      else { icon = '🟡'; markCls = 'mark-mid'; }
+      iconEl.textContent = icon;
+      document.getElementById(`opt-${idx}`).classList.add(markCls);
+    });
+    feedbackHtml = `
+      <span class="points-earned">+${earned} punto${earned===1?'':'s'}</span>
+      <span class="who">Explicación del ingeniero industrial</span>
+      <p>${round.explanation}</p>
+      <span class="concept-chip">💡 ${round.concept}</span>
+    `;
+  }
+
+  totalPoints += earned;
+  updatePointsDisplay();
+  maybeShowRankUp();
+
+  const fb = document.getElementById('feedback');
+  fb.innerHTML = feedbackHtml + `
+    <div class="next-row">
+      <button class="btn btn-primary" onclick="nextRound()">${currentIdx===ROUNDS.length-1 ? 'Ver resultado final' : 'Siguiente ronda'}</button>
+    </div>
+  `;
+  fb.classList.add('show');
+}
+
+function nextRound(){
+  currentIdx++;
+  if(currentIdx >= ROUNDS.length){
+    showFinal();
+  } else {
+    renderRound();
+  }
+}
+
+function showFinal(){
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-final').classList.add('active');
+  const rank = getRank(totalPoints);
+  document.getElementById('finalEmoji').textContent = rank.emoji;
+  document.getElementById('finalRankName').textContent = rank.name;
+  document.getElementById('finalScore').textContent = totalPoints;
+  document.getElementById('finalText').textContent = rank.text;
+  renderRankBar(totalPoints, 'finalRankBar');
+}
+
+function restartGame(){
+  document.getElementById('screen-final').classList.remove('active');
+  document.getElementById('screen-intro').classList.add('active');
+  totalPoints = 0;
+  lastRankIdx = 0;
+  updatePointsDisplay();
+}
+
+updatePointsDisplay();
+</script>
+</body>
+</html>
