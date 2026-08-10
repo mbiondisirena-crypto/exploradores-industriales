@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultores Industriales — Exploradores Industriales</title>
+<link rel="stylesheet" href="../styles/shared.css">
+<style>
+.activity-header{
+  background:radial-gradient(ellipse at 15% -20%, #1c2f66 0%, transparent 55%), var(--hub-navy);
+  color:#fff;padding:16px 20px;
+  border-bottom:4px solid var(--hub-teal);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+.activity-header .back-link{color:#c7cce0;}
+.activity-header .back-link:hover{color:#fff;}
+.activity-wrap{max-width:640px;margin:0 auto;padding:36px 20px 60px;}
+.activity-card{
+  background:#fff;border-radius:var(--radius);border:1px solid var(--hub-line);
+  padding:30px 26px;box-shadow:0 10px 30px #0000000a;text-align:center;
+}
+.activity-card .emoji{font-size:46px;margin-bottom:6px;}
+.activity-card h1{font-size:clamp(22px,5vw,28px);font-weight:800;margin:6px 0 10px;}
+.activity-card p.desc{font-size:15px;line-height:1.6;color:var(--hub-muted);max-width:52ch;margin:0 auto 26px;}
+
+.puestos{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;
+}
+@media (max-width:480px){ .puestos{grid-template-columns:repeat(2,1fr);} }
+.puesto-btn{
+  appearance:none;cursor:pointer;font-family:inherit;
+  background:#F6F5F1;border:2px solid var(--hub-line);border-radius:14px;
+  padding:20px 10px;font-weight:800;font-size:22px;color:var(--hub-ink);
+  transition:all .15s ease;
+}
+.puesto-btn:hover{border-color:var(--hub-teal);}
+.puesto-btn.selected{background:var(--hub-navy);border-color:var(--hub-navy);color:#fff;transform:scale(1.04);}
+
+.confirm-row{display:none;}
+.confirm-row.show{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.btn-primary{
+  appearance:none;border:none;cursor:pointer;font-family:inherit;
+  font-weight:800;font-size:15px;border-radius:12px;padding:15px 26px;
+  background:var(--hub-navy);color:#fff;
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn-primary:hover{box-shadow:0 8px 20px #0e1b3d55;}
+.btn-primary:active{transform:translateY(2px) scale(.98);}
+.btn-primary:disabled{opacity:.5;cursor:default;}
+
+.result-panel{
+  display:none;margin-top:22px;padding-top:22px;border-top:2px dashed var(--hub-line);
+}
+.result-panel.show{display:block;animation:fadeIn .3s ease;}
+.result-panel .msg{
+  font-size:17px;font-weight:700;color:var(--hub-ink);margin-bottom:16px;
+}
+.result-panel .pts{color:var(--hub-teal);}
+.back-link-cta{
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  font-weight:700;font-size:14px;color:var(--hub-navy);
+}
+.back-link-cta:hover{color:var(--hub-teal);}
+</style>
+</head>
+<body>
+
+<div class="activity-header">
+  <a class="back-link" href="../index.html">← Volver a Exploradores Industriales</a>
+</div>
+
+<div class="activity-wrap">
+  <div class="activity-card">
+    <div class="emoji">🤝</div>
+    <h1>Consultores Industriales</h1>
+    <p class="desc">Cargá el puesto en el que salió tu equipo en la dinámica de consultoría. 1° es el mejor puesto.</p>
+
+    <div class="puestos" id="puestos">
+      <button class="puesto-btn" data-puesto="1" onclick="selectPuesto(1)">1°</button>
+      <button class="puesto-btn" data-puesto="2" onclick="selectPuesto(2)">2°</button>
+      <button class="puesto-btn" data-puesto="3" onclick="selectPuesto(3)">3°</button>
+      <button class="puesto-btn" data-puesto="4" onclick="selectPuesto(4)">4°</button>
+      <button class="puesto-btn" data-puesto="5" onclick="selectPuesto(5)">5°</button>
+      <button class="puesto-btn" data-puesto="6" onclick="selectPuesto(6)">6°</button>
+    </div>
+
+    <div class="confirm-row" id="confirmRow">
+      <button class="btn-primary" onclick="confirmResult()">Confirmar resultado</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="msg" id="resultMsg"></div>
+      <a class="back-link-cta" href="../index.html">← Volver a Exploradores Industriales</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const POINTS_BY_PUESTO = {1:30, 2:25, 3:20, 4:15, 5:10, 6:5};
+let selected = null;
+
+function selectPuesto(p){
+  selected = p;
+  document.querySelectorAll('.puesto-btn').forEach(b=>{
+    b.classList.toggle('selected', Number(b.dataset.puesto) === p);
+  });
+  document.getElementById('confirmRow').classList.add('show');
+}
+
+function confirmResult(){
+  if(selected == null) return;
+  const points = POINTS_BY_PUESTO[selected];
+  try{ localStorage.setItem('exploradores_score_consultores', String(points)); }catch(e){}
+
+  document.querySelectorAll('.puesto-btn').forEach(b=>b.disabled = true);
+  document.getElementById('confirmRow').classList.remove('show');
+
+  const msg = document.getElementById('resultMsg');
+  msg.innerHTML = `¡Cargado! Sumaron <span class="pts">${points} puntos</span> como equipo (puesto ${selected}°).`;
+  document.getElementById('resultPanel').classList.add('show');
+}
+</script>
+</body>
+</html>

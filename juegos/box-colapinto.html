@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Boxes de Alpine — Prepará el auto de Colapinto</title>
+<title>Boxes de ITBA Racing — Prepará el auto de Colapinto</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -291,7 +291,7 @@ body{
 
 <div class="topbar">
   <div class="brand">
-    <span class="mark">ALPINE</span>
+    <span class="mark">ITBA RACING</span>
     <span class="sub">Boxes · Ingeniería de Pista</span>
   </div>
   <div class="pitboard">
@@ -303,7 +303,7 @@ body{
 <!-- SCREEN 1: INTRO -->
 <div class="screen active" id="screen-intro">
   <div class="garage">
-    <span class="eyebrow">Simulador · Equipo Alpine F1</span>
+    <span class="eyebrow">Simulador · Equipo de Carrera</span>
     <h1 class="hero-title">Preparen el auto de <span class="accent">Colapinto</span>.</h1>
     <p class="hero-sub">Sos el nuevo ingeniero industrial del box. El equipo necesita organizar la construcción del auto antes de la clasificación — y vos decidís en qué orden se hacen las tareas.</p>
 
@@ -380,10 +380,10 @@ body{
   <div class="modal">
     <span class="eyebrow">Briefing de boxes</span>
     <h2>Clasificación en Buenos Aires</h2>
-    <p>El equipo Alpine quiere presentar el auto de Franco Colapinto a tiempo para la clasificación. Para eso hay que entregarle a la ingeniera jefa un plan de construcción realista.</p>
+    <p>El equipo quiere presentar el auto de Franco Colapinto a tiempo para la clasificación. Para eso hay que entregarle a la ingeniera jefa un plan de construcción realista.</p>
     <p>La clasificación es en <b>15 días</b>. Ayudá al equipo a llegar a tiempo — y si podés, ganale al récord de boxes.</p>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="closeModal('modal-mission');startGame()">Vamos, Alpine</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-mission');startGame()">Vamos, equipo</button>
     </div>
   </div>
 </div>
@@ -410,6 +410,8 @@ body{
     <div class="stat-grid">
       <div class="stat"><div class="n" id="statDays">-</div><div class="l">Días usados</div></div>
       <div class="stat"><div class="n" id="statOptimal">11</div><div class="l">Récord de boxes</div></div>
+      <div class="stat"><div class="n" id="statTime">-</div><div class="l">Tiempo real jugado</div></div>
+      <div class="stat"><div class="n" id="statPoints">-</div><div class="l">Puntos para el marcador</div></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('modal-result');resetBoard()">Reintentar</button>
@@ -435,11 +437,33 @@ const TASKS = [
   {id:'C', name:'Fabricación del chasis', dur:4, pred:['A'], color:'#0B3D91'},
   {id:'D', name:'Fabricación de alerones', dur:3, pred:['B'], color:'#E0559C'},
   {id:'E', name:'Programación de telemetría', dur:3, pred:[], color:'#21D0C7'},
-  {id:'F', name:'Pintura y calcos Alpine', dur:2, pred:['C'], color:'#FF2D78'},
+  {id:'F', name:'Pintura y calcos del equipo', dur:2, pred:['C'], color:'#FF2D78'},
   {id:'G', name:'Ensamble final', dur:2, pred:['D','E','F'], color:'#FFD400'},
 ];
 
 let placements = {}; // id -> startDay (1-indexed) or null
+
+// ---- real-time stopwatch (the "reloj que te va a torturar") ----
+let clockSeconds = 0;
+let clockInterval = null;
+
+function updateClockDisplay(){
+  const mm = String(Math.floor(clockSeconds/60)).padStart(2,'0');
+  const ss = String(clockSeconds%60).padStart(2,'0');
+  document.getElementById('clockDisplay').textContent = mm+':'+ss;
+}
+function startClock(){
+  clockSeconds = 0;
+  updateClockDisplay();
+  clearInterval(clockInterval);
+  clockInterval = setInterval(()=>{
+    clockSeconds++;
+    updateClockDisplay();
+  }, 1000);
+}
+function stopClock(){
+  clearInterval(clockInterval);
+}
 
 function taskById(id){ return TASKS.find(t=>t.id===id); }
 
@@ -453,6 +477,7 @@ function startGame(){
   document.getElementById('deadlineTxt').textContent = DEADLINE + ' días';
   buildTable();
   buildBoard();
+  resetBoard();
 }
 
 function buildTable(){
@@ -559,6 +584,7 @@ function resetBoard(){
   placements = {};
   renderPlacements();
   hideBanner();
+  startClock();
 }
 
 function flashBanner(kind, msg){
@@ -637,15 +663,13 @@ function runLightsThenSim(makespan){
 }
 
 function simulate(makespan){
-  const clockEl = document.getElementById('clockDisplay');
+  // this animates the board playing out day-by-day (visual only) —
+  // the real stopwatch up top keeps running on its own real-time interval.
   let day = 0;
   const stepMs = 130;
   document.querySelectorAll('.days-header .day-lbl').forEach(el=>el.classList.remove('active-day'));
   const interval = setInterval(()=>{
     day++;
-    const mm = String(Math.floor(day/60)).padStart(2,'0');
-    const ss = String(day%60).padStart(2,'0');
-    clockEl.textContent = mm+':'+ss;
     document.querySelectorAll('.days-header .day-lbl').forEach(el=>el.classList.remove('active-day'));
     const lbl = document.getElementById('daylbl-'+day);
     if(lbl) lbl.classList.add('active-day');
@@ -661,6 +685,7 @@ function simulate(makespan){
     if(day>=makespan){
       clearInterval(interval);
       TASKS.forEach(t=>document.getElementById('row-'+t.id).classList.remove('simming'));
+      stopClock();
       showResult(makespan);
     }
   }, stepMs);
@@ -670,6 +695,15 @@ function showResult(makespan){
   document.getElementById('statDays').textContent = makespan;
   const stars = makespan<=OPTIMAL ? 3 : makespan<=OPTIMAL+3 ? 2 : 1;
   document.getElementById('resultStars').textContent = '★'.repeat(stars) + '☆'.repeat(3-stars);
+
+  const mm = String(Math.floor(clockSeconds/60)).padStart(2,'0');
+  const ss = String(clockSeconds%60).padStart(2,'0');
+  document.getElementById('statTime').textContent = mm+':'+ss;
+
+  const points = stars===3 ? 30 : stars===2 ? 20 : 10;
+  document.getElementById('statPoints').textContent = points;
+  // shared score key read by the Exploradores Industriales hub
+  try{ localStorage.setItem('exploradores_score_racing', String(points)); }catch(e){}
 
   const title = document.getElementById('resultTitle');
   const msg = document.getElementById('resultMsg');

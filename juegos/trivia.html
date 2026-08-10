@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trivia Exploradores — Exploradores Industriales</title>
+<link rel="stylesheet" href="../styles/shared.css">
+<style>
+.activity-header{
+  background:radial-gradient(ellipse at 15% -20%, #1c2f66 0%, transparent 55%), var(--hub-navy);
+  color:#fff;padding:16px 20px;
+  border-bottom:4px solid var(--hub-teal);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+.activity-header .back-link{color:#c7cce0;}
+.activity-header .back-link:hover{color:#fff;}
+.activity-wrap{max-width:640px;margin:0 auto;padding:36px 20px 60px;}
+.activity-card{
+  background:#fff;border-radius:var(--radius);border:1px solid var(--hub-line);
+  padding:30px 26px;box-shadow:0 10px 30px #0000000a;text-align:center;
+}
+.activity-card .emoji{font-size:46px;margin-bottom:6px;}
+.activity-card h1{font-size:clamp(22px,5vw,28px);font-weight:800;margin:6px 0 10px;}
+.activity-card p.desc{font-size:15px;line-height:1.6;color:var(--hub-muted);max-width:52ch;margin:0 auto 22px;}
+
+.btn-kahoot{
+  appearance:none;border:none;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-weight:800;font-size:15px;
+  border-radius:12px;padding:16px 26px;margin-bottom:8px;
+  background:var(--hub-teal);color:var(--hub-navy-deep);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn-kahoot:hover{box-shadow:0 8px 20px #12c7b555;}
+.btn-kahoot:active{transform:translateY(2px) scale(.98);}
+
+.divider{
+  border:none;border-top:1px dashed var(--hub-line);margin:26px 0;
+}
+
+.form-block{text-align:left;}
+.form-block label{
+  display:block;font-weight:700;font-size:13.5px;color:var(--hub-ink);margin-bottom:6px;
+}
+.form-row{margin-bottom:16px;}
+.form-row input{
+  width:100%;font-family:inherit;font-size:16px;padding:12px 14px;
+  border:2px solid var(--hub-line);border-radius:10px;color:var(--hub-ink);
+}
+.form-row input:focus{outline:none;border-color:var(--hub-teal);}
+
+.error-msg{
+  display:none;background:#fdecec;border:1px solid #f3b3b3;color:#b3261e;
+  font-size:13.5px;font-weight:600;border-radius:10px;padding:10px 14px;margin-bottom:16px;
+}
+.error-msg.show{display:block;}
+
+.btn-primary{
+  appearance:none;border:none;cursor:pointer;font-family:inherit;width:100%;
+  font-weight:800;font-size:15px;border-radius:12px;padding:15px 26px;
+  background:var(--hub-navy);color:#fff;
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn-primary:hover{box-shadow:0 8px 20px #0e1b3d55;}
+.btn-primary:active{transform:translateY(2px) scale(.98);}
+
+.result-panel{
+  display:none;margin-top:22px;padding-top:22px;border-top:2px dashed var(--hub-line);
+}
+.result-panel.show{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.result-panel .msg{font-size:17px;font-weight:700;color:var(--hub-ink);margin-bottom:16px;}
+.result-panel .pts{color:var(--hub-teal);}
+.back-link-cta{
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  font-weight:700;font-size:14px;color:var(--hub-navy);
+}
+.back-link-cta:hover{color:var(--hub-teal);}
+</style>
+</head>
+<body>
+
+<div class="activity-header">
+  <a class="back-link" href="../index.html">← Volver a Exploradores Industriales</a>
+</div>
+
+<div class="activity-wrap">
+  <div class="activity-card">
+    <div class="emoji">🧠</div>
+    <h1>Trivia Exploradores</h1>
+    <p class="desc">Jueguen esta trivia en equipo. Cuando terminen, anoten el puntaje total que les dio Kahoot y cárguenlo acá para sumarlo.</p>
+
+    <a class="btn-kahoot" href="https://kahoot.it/challenge/06844580?challenge-id=7e31b506-7a77-4ca6-831a-03fa1e117b35_1786128191783" target="_blank" rel="noopener noreferrer">🎮 Abrir la trivia</a>
+
+    <hr class="divider">
+
+    <div class="form-block" id="formBlock">
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="form-row">
+        <label for="kahootInput">¿Cuántos puntos les dio Kahoot en total? (máximo 8000)</label>
+        <input type="number" id="kahootInput" min="0" max="8000" step="1" inputmode="numeric">
+      </div>
+      <button class="btn-primary" onclick="calcularPuntos()">Calcular puntos</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="msg" id="resultMsg"></div>
+      <a class="back-link-cta" href="../index.html">← Volver a Exploradores Industriales</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function showError(msg){
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideError(){
+  document.getElementById('errorMsg').classList.remove('show');
+}
+
+const KAHOOT_MAX = 8000;
+
+function calcularPuntos(){
+  hideError();
+  const kahootRaw = document.getElementById('kahootInput').value;
+  const kahootScore = Number(kahootRaw);
+
+  if(kahootRaw === '' || !Number.isFinite(kahootScore)){
+    showError('Completá el campo con un número.');
+    return;
+  }
+  if(!Number.isInteger(kahootScore) || kahootScore < 0 || kahootScore > KAHOOT_MAX){
+    showError(`El puntaje tiene que ser un número entero entre 0 y ${KAHOOT_MAX}.`);
+    return;
+  }
+
+  const points = Math.round((kahootScore / KAHOOT_MAX) * 30);
+  try{ localStorage.setItem('exploradores_score_trivia', String(points)); }catch(e){}
+
+  document.getElementById('formBlock').style.display = 'none';
+  const msg = document.getElementById('resultMsg');
+  msg.innerHTML = `¡Sumaron <span class="pts">${points} puntos</span>! (${kahootScore} de ${KAHOOT_MAX} en Kahoot)`;
+  document.getElementById('resultPanel').classList.add('show');
+}
+</script>
+</body>
+</html>

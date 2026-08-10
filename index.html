@@ -13,36 +13,128 @@
     <span class="hub-tag">ITBA · Ingeniería Industrial</span>
     <h1>Exploradores Industriales</h1>
     <p class="bajada">Viví la ingeniería jugando</p>
-    <p class="desc">La Ingeniería Industrial se trata de resolver problemas reales de procesos, decisiones y organización. Estos dos juegos simulan situaciones reales: la construcción del auto de un equipo de carreras y la operación diaria de un centro de distribución. Elijan uno en equipo y empiecen a jugar.</p>
+    <p class="desc">La Ingeniería Industrial se trata de resolver problemas reales de procesos, decisiones y organización. Estas cuatro actividades simulan situaciones reales: la construcción del auto de un equipo de carreras, la operación diaria de un centro de distribución, una negociación de consultoría y un repaso general. Elijan una en equipo y empiecen a jugar.</p>
   </div>
 </header>
+
+<div class="score-bar">
+  <div class="total-block">
+    <span class="total-label">Puntaje del equipo</span>
+    <span class="total-num"><span id="totalScore">0</span> <small>pts</small></span>
+  </div>
+  <button class="btn-reset" onclick="resetTeamScore()">Reiniciar puntaje del equipo</button>
+</div>
 
 <main class="hub-main">
   <div class="cards">
 
-    <article class="game-card alpine">
-      <div class="icon-row">🏎️</div>
-      <h2>Boxes de Alpine: Preparen el auto de Colapinto</h2>
-      <p>Sos el ingeniero del box. Organizá el cronograma de construcción del auto de Franco Colapinto antes de la clasificación.</p>
+    <article class="game-card racing">
+      <div class="icon-row">🏎️ <span class="card-score" id="score-racing">✓ 0 pts</span></div>
+      <h2>ITBA Racing: Preparen el auto de Colapinto</h2>
+      <p>Organizá el cronograma de construcción del auto antes de la clasificación.</p>
       <span class="skill-tag">Planificación de proyectos y precedencias</span>
-      <a class="btn-play" href="juegos/alpine-boxes.html">Jugar →</a>
+      <a class="btn-play" href="juegos/box-colapinto.html">Jugar →</a>
     </article>
 
-    <article class="game-card meli">
-      <div class="icon-row">📦</div>
-      <h2>Sos el Jefe de Planta de Mercado Libre</h2>
-      <p>Tu primer día al mando de un centro de distribución. 50.000 paquetes por despachar y un montón de decisiones bajo presión.</p>
+    <article class="game-card clickgo">
+      <div class="icon-row">📦 <span class="card-score" id="score-clickgo">✓ 0 pts</span></div>
+      <h2>Sos el Jefe de Planta de ClickGo</h2>
+      <p>Tu primer día al mando de un centro de distribución. 50.000 paquetes por despachar y decisiones bajo presión.</p>
       <span class="skill-tag">Toma de decisiones y resolución de problemas</span>
-      <a class="btn-play" href="juegos/jefe-de-planta.html">Jugar →</a>
+      <a class="btn-play" href="juegos/clickgo.html">Jugar →</a>
+    </article>
+
+    <article class="game-card consultores">
+      <div class="icon-row">🤝 <span class="card-score" id="score-consultores">✓ 0 pts</span></div>
+      <h2>Consultores Industriales</h2>
+      <p>Cargá el resultado de la dinámica de consultoría que hicieron en equipo.</p>
+      <span class="skill-tag">Trabajo en equipo y negociación</span>
+      <a class="btn-play" href="juegos/consultores.html">Jugar →</a>
+    </article>
+
+    <article class="game-card trivia">
+      <div class="icon-row">🧠 <span class="card-score" id="score-trivia">✓ 0 pts</span></div>
+      <h2>Trivia Exploradores</h2>
+      <p>Un Kahoot para poner a prueba lo que aprendieron.</p>
+      <span class="skill-tag">Repaso general</span>
+      <a class="btn-play" href="juegos/trivia.html">Jugar →</a>
     </article>
 
   </div>
+
+  <section class="results-section">
+    <div class="results-card">
+      <h2>Resultado final del equipo</h2>
+      <p class="sub">Desglose por actividad — jueguen las cuatro para completar el resultado.</p>
+      <div class="results-breakdown" id="resultsBreakdown"><!-- filled by JS --></div>
+      <div class="results-total">
+        <span class="lbl">Puntaje total</span>
+        <span class="num" id="resultsTotal">0</span>
+      </div>
+      <p class="closing">Así piensa un ingeniero industrial: planifica, decide bajo presión, negocia en equipo y no deja de aprender.</p>
+    </div>
+  </section>
 </main>
 
 <footer class="hub-footer">
   <span class="credit">Ingeniería Industrial — ITBA</span>
-  <span class="hint">Actividad pensada para trabajar en equipo — elijan un juego y decidan en grupo.</span>
+  <span class="hint">Actividad pensada para trabajar en equipo — elijan una actividad y decidan en grupo.</span>
 </footer>
+
+<script>
+const ACTIVITIES = [
+  {id:'racing',      key:'exploradores_score_racing',      label:'ITBA Racing'},
+  {id:'clickgo',      key:'exploradores_score_clickgo',      label:'Jefe de Planta ClickGo'},
+  {id:'consultores',  key:'exploradores_score_consultores',  label:'Consultores Industriales'},
+  {id:'trivia',       key:'exploradores_score_trivia',       label:'Trivia Exploradores'},
+];
+
+function getScore(key){
+  const v = localStorage.getItem(key);
+  if(v === null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function renderScores(){
+  let total = 0;
+  let breakdownHtml = '';
+
+  ACTIVITIES.forEach(a=>{
+    const v = getScore(a.key);
+    const played = v !== null;
+    if(played) total += v;
+
+    const badge = document.getElementById('score-'+a.id);
+    if(badge){
+      if(played){
+        badge.textContent = `✓ ${v} pts`;
+        badge.classList.add('show');
+      } else {
+        badge.classList.remove('show');
+      }
+    }
+
+    breakdownHtml += `<div class="result-chip ${played?'':'unplayed'}">
+      <div class="nm">${a.label}</div>
+      <div class="pts">${played ? v+' pts' : 'Todavía no jugado'}</div>
+    </div>`;
+  });
+
+  document.getElementById('totalScore').textContent = total;
+  document.getElementById('resultsTotal').textContent = total;
+  document.getElementById('resultsBreakdown').innerHTML = breakdownHtml;
+}
+
+function resetTeamScore(){
+  ACTIVITIES.forEach(a=>{
+    try{ localStorage.removeItem(a.key); }catch(e){}
+  });
+  renderScores();
+}
+
+renderScores();
+</script>
 
 </body>
 </html>
