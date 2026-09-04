@@ -21,39 +21,52 @@
 }
 .activity-card .emoji{font-size:46px;margin-bottom:6px;}
 .activity-card h1{font-size:clamp(22px,5vw,28px);font-weight:800;margin:6px 0 10px;}
-.activity-card p.desc{font-size:15px;line-height:1.6;color:var(--hub-muted);max-width:52ch;margin:0 auto 26px;}
+.activity-card p.desc{font-size:15px;line-height:1.6;color:var(--hub-muted);max-width:52ch;margin:0 auto 20px;}
 
-.puestos{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;
+.explain-box{
+  text-align:left;background:#F6F5F1;border:1px solid var(--hub-line);border-radius:12px;
+  padding:16px 18px;margin-bottom:26px;
 }
-@media (max-width:480px){ .puestos{grid-template-columns:repeat(2,1fr);} }
-.puesto-btn{
-  appearance:none;cursor:pointer;font-family:inherit;
-  background:#F6F5F1;border:2px solid var(--hub-line);border-radius:14px;
-  padding:20px 10px;font-weight:800;font-size:22px;color:var(--hub-ink);
-  transition:all .15s ease;
+.explain-box .eyebrow{
+  display:block;font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--hub-teal);margin-bottom:6px;
 }
-.puesto-btn:hover{border-color:var(--hub-teal);}
-.puesto-btn.selected{background:var(--hub-navy);border-color:var(--hub-navy);color:#fff;transform:scale(1.04);}
+.explain-box p{font-size:14px;line-height:1.6;color:var(--hub-ink);margin:0 0 8px;}
+.explain-box p:last-child{margin-bottom:0;}
+.explain-box .concept-chip{
+  display:inline-block;background:var(--hub-navy);color:#fff;
+  font-weight:800;font-size:12px;padding:6px 12px;border-radius:10px;margin-top:4px;
+}
 
-.confirm-row{display:none;}
-.confirm-row.show{display:block;animation:fadeIn .25s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.form-row{margin-bottom:18px;text-align:left;}
+.form-row label{display:block;font-weight:700;font-size:13.5px;color:var(--hub-ink);margin-bottom:6px;}
+.form-row input{
+  width:100%;font-family:inherit;font-size:16px;padding:12px 14px;
+  border:2px solid var(--hub-line);border-radius:10px;color:var(--hub-ink);
+}
+.form-row input:focus{outline:none;border-color:var(--hub-teal);}
+.form-row .hint{font-size:12px;color:var(--hub-muted);margin-top:6px;}
+
+.error-msg{
+  display:none;background:#fdecec;border:1px solid #f3b3b3;color:#b3261e;
+  font-size:13.5px;font-weight:600;border-radius:10px;padding:10px 14px;margin-bottom:16px;text-align:left;
+}
+.error-msg.show{display:block;}
 
 .btn-primary{
-  appearance:none;border:none;cursor:pointer;font-family:inherit;
+  appearance:none;border:none;cursor:pointer;font-family:inherit;width:100%;
   font-weight:800;font-size:15px;border-radius:12px;padding:15px 26px;
   background:var(--hub-navy);color:#fff;
   transition:transform .12s ease, box-shadow .12s ease;
 }
 .btn-primary:hover{box-shadow:0 8px 20px #0e1b3d55;}
 .btn-primary:active{transform:translateY(2px) scale(.98);}
-.btn-primary:disabled{opacity:.5;cursor:default;}
 
 .result-panel{
   display:none;margin-top:22px;padding-top:22px;border-top:2px dashed var(--hub-line);
 }
 .result-panel.show{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .result-panel .msg{
   font-size:17px;font-weight:700;color:var(--hub-ink);margin-bottom:16px;
 }
@@ -75,18 +88,22 @@
   <div class="activity-card">
     <div class="emoji">🤝</div>
     <h1>Consultores Industriales</h1>
-    <p class="desc">Cargá el puesto en el que salió tu equipo en la dinámica de consultoría. 1° es el mejor puesto.</p>
+    <p class="desc">Cargá tu puntaje individual obtenido al final de la dinámica de consultoría.</p>
 
-    <div class="puestos" id="puestos">
-      <button class="puesto-btn" data-puesto="1" onclick="selectPuesto(1)">1°</button>
-      <button class="puesto-btn" data-puesto="2" onclick="selectPuesto(2)">2°</button>
-      <button class="puesto-btn" data-puesto="3" onclick="selectPuesto(3)">3°</button>
-      <button class="puesto-btn" data-puesto="4" onclick="selectPuesto(4)">4°</button>
-      <button class="puesto-btn" data-puesto="5" onclick="selectPuesto(5)">5°</button>
-      <button class="puesto-btn" data-puesto="6" onclick="selectPuesto(6)">6°</button>
+    <div class="explain-box">
+      <span class="eyebrow">¿De qué se trata?</span>
+      <p>En esta dinámica presencial cada participante negocia con el resto del grupo cómo repartir recursos compartidos (tiempo, presupuesto, información) para resolver un caso de consultoría industrial. No hay una única estrategia ganadora: vas sumando puntos según las decisiones que tomás, los acuerdos a los que llegás y qué tan bien defendés tu posición frente al resto.</p>
+      <p>Al terminar, quien facilita la dinámica te va a dar tu puntaje individual — cargalo acá abajo.</p>
+      <span class="concept-chip">💡 Negociación y asignación de recursos compartidos</span>
     </div>
 
-    <div class="confirm-row" id="confirmRow">
+    <div class="form-block" id="formBlock">
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="form-row">
+        <label for="scoreInput">Tu puntaje individual (0 a 100)</label>
+        <input type="number" id="scoreInput" min="0" max="100" step="1" inputmode="numeric">
+        <div class="hint">Se convierte a una escala de hasta 15 puntos para el resultado final.</div>
+      </div>
       <button class="btn-primary" onclick="confirmResult()">Confirmar resultado</button>
     </div>
 
@@ -98,27 +115,38 @@
 </div>
 
 <script>
-const POINTS_BY_PUESTO = {1:30, 2:25, 3:20, 4:15, 5:10, 6:5};
-let selected = null;
+const MAX_SCORE = 100;
+const MAX_POINTS = 15;
 
-function selectPuesto(p){
-  selected = p;
-  document.querySelectorAll('.puesto-btn').forEach(b=>{
-    b.classList.toggle('selected', Number(b.dataset.puesto) === p);
-  });
-  document.getElementById('confirmRow').classList.add('show');
+function showError(msg){
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideError(){
+  document.getElementById('errorMsg').classList.remove('show');
 }
 
 function confirmResult(){
-  if(selected == null) return;
-  const points = POINTS_BY_PUESTO[selected];
+  hideError();
+  const raw = document.getElementById('scoreInput').value;
+  const score = Number(raw);
+
+  if(raw === '' || !Number.isFinite(score)){
+    showError('Completá el campo con un número.');
+    return;
+  }
+  if(!Number.isInteger(score) || score < 0 || score > MAX_SCORE){
+    showError(`El puntaje tiene que ser un número entero entre 0 y ${MAX_SCORE}.`);
+    return;
+  }
+
+  const points = Math.round((score / MAX_SCORE) * MAX_POINTS);
   try{ localStorage.setItem('exploradores_score_consultores', String(points)); }catch(e){}
 
-  document.querySelectorAll('.puesto-btn').forEach(b=>b.disabled = true);
-  document.getElementById('confirmRow').classList.remove('show');
-
+  document.getElementById('formBlock').style.display = 'none';
   const msg = document.getElementById('resultMsg');
-  msg.innerHTML = `¡Cargado! Sumaron <span class="pts">${points} puntos</span> como equipo (puesto ${selected}°).`;
+  msg.innerHTML = `¡Cargado! Sumaste <span class="pts">${points} puntos</span> (${score} de ${MAX_SCORE} en la dinámica).`;
   document.getElementById('resultPanel').classList.add('show');
 }
 </script>

@@ -151,6 +151,23 @@ h1,h2,h3{font-family:'Space Grotesk','Inter',Arial,sans-serif;}
 .results-total .num{font-family:'Space Grotesk','Inter',Arial,sans-serif;font-weight:800;font-size:30px;color:var(--hub-teal);}
 .results-card .closing{font-size:14.5px;line-height:1.6;color:#dde1f0;margin:0;}
 
+.register-cta{
+  margin-top:22px;padding-top:20px;border-top:1px solid #ffffff22;
+  display:flex;flex-direction:column;gap:12px;align-items:flex-start;
+}
+.register-txt{font-size:14px;line-height:1.6;color:#dde1f0;margin:0;max-width:60ch;}
+.register-txt b{color:#fff;}
+.btn-register{
+  appearance:none;border:none;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-weight:800;font-size:14px;letter-spacing:.3px;
+  border-radius:12px;padding:13px 20px;
+  background:var(--hub-teal);color:var(--hub-navy-deep);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn-register:hover{box-shadow:0 8px 20px #12c7b555;}
+.btn-register:active{transform:translateY(2px) scale(.98);}
+
 .hub-footer{
   max-width:980px;margin:20px auto 0;padding:24px 20px 40px;
   border-top:1px solid var(--hub-line);
