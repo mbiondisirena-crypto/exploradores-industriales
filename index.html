@@ -19,10 +19,10 @@
 
 <div class="score-bar">
   <div class="total-block">
-    <span class="total-label">Puntaje del equipo</span>
+    <span class="total-label">Puntaje</span>
     <span class="total-num"><span id="totalScore">0</span> <small>pts</small></span>
   </div>
-  <button class="btn-reset" onclick="resetTeamScore()">Reiniciar puntaje del equipo</button>
+  <button class="btn-reset" onclick="resetTeamScore()">Reiniciar puntaje</button>
 </div>
 
 <main class="hub-main">
@@ -47,7 +47,7 @@
     <article class="game-card consultores">
       <div class="icon-row">🤝 <span class="card-score" id="score-consultores">✓ 0 pts</span></div>
       <h2>Consultores Industriales</h2>
-      <p>Cargá el resultado de la dinámica de consultoría que hicieron en equipo.</p>
+      <p>Cargá tu puntaje individual de la dinámica de consultoría.</p>
       <span class="skill-tag">Trabajo en equipo y negociación</span>
       <a class="btn-play" href="juegos/consultores.html">Jugar →</a>
     </article>
@@ -64,7 +64,7 @@
 
   <section class="results-section">
     <div class="results-card">
-      <h2>Resultado final del equipo</h2>
+      <h2>Resultado final</h2>
       <p class="sub">Desglose por actividad — jueguen las cuatro para completar el resultado.</p>
       <div class="results-breakdown" id="resultsBreakdown"><!-- filled by JS --></div>
       <div class="results-total">
@@ -72,6 +72,11 @@
         <span class="num" id="resultsTotal">0</span>
       </div>
       <p class="closing">Así piensa un ingeniero industrial: planifica, decide bajo presión, negocia en equipo y no deja de aprender.</p>
+
+      <div class="register-cta">
+        <p class="register-txt">📝 <b>Registro final:</b> cargá tu puntaje total (<span id="registerTotal">0</span> pts) junto con una captura de pantalla como comprobante para entrar al ranking de ganadores.</p>
+        <a class="btn-register" href="https://docs.google.com/forms/d/e/1FAIpQLSfK-v0BEyIgL7fklOcLfmrM9yrdfddX9Qqm8FqeIEgweFd5_g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">Abrir formulario de registro →</a>
+      </div>
     </div>
   </section>
 </main>
@@ -123,6 +128,7 @@ function renderScores(){
 
   document.getElementById('totalScore').textContent = total;
   document.getElementById('resultsTotal').textContent = total;
+  document.getElementById('registerTotal').textContent = total;
   document.getElementById('resultsBreakdown').innerHTML = breakdownHtml;
 }
 

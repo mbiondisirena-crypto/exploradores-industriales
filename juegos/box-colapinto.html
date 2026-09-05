@@ -222,23 +222,33 @@ body{
 .task-label .dur{font-size:10px;color:#7c8aa3;}
 .task-label .pred{font-size:10px;color:#5f6c85;}
 
-.row-cells{display:grid;grid-auto-flow:column;grid-auto-columns:46px;border-top:1px solid #1c2230;position:relative;}
+.row-cells{display:grid;grid-auto-flow:column;grid-auto-columns:46px;border-top:1px solid #1c2230;position:relative;height:44px;}
 .cell{
   height:44px;border-right:1px solid #171c27;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
 }
-.cell:hover{background:#161c28;}
-.cell.filled{cursor:pointer;}
 .block{
-  grid-row:1;height:34px;border-radius:6px;margin:5px 2px;
+  position:absolute;top:5px;height:34px;border-radius:6px;
   display:flex;align-items:center;justify-content:center;
   font-weight:800;font-size:12px;color:#0a0a0a;
   box-shadow:0 3px 8px #0006;
+  cursor:grab;touch-action:none;user-select:none;
+  transition:left .18s ease, opacity .15s ease;
 }
+.block.dragging{transition:none;cursor:grabbing;z-index:5;box-shadow:0 6px 16px #000a;}
+.block.unplaced{opacity:.5;box-shadow:none;border:2px dashed rgba(255,255,255,.5);}
 .block small{font-weight:600;font-size:9px;display:block;}
 .row-cells.error .block{outline:2px solid var(--bad);animation:shake .3s;}
 .row-cells.simming .block{outline:2px solid var(--gold);}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+.rotate-hint{
+  display:none;align-items:center;gap:8px;
+  background:#151a24;border:1px solid #2a3142;border-radius:10px;
+  padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:#c3cce0;
+}
+@media (max-width:700px){
+  .rotate-hint{display:flex;}
+}
 
 .legend-hint{font-size:11.5px;color:#7c8aa3;margin-top:10px;}
 
@@ -274,6 +284,7 @@ body{
 .stat{background:#0d1017;border:1px solid #2a3142;border-radius:10px;padding:12px;}
 .stat .n{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:var(--gold);}
 .stat .l{font-size:10.5px;color:#7c8aa3;text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;}
+.stat.wide{grid-column:1/-1;}
 
 .table-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
 .table-row{
@@ -305,7 +316,7 @@ body{
   <div class="garage">
     <span class="eyebrow">Simulador · Equipo de Carrera</span>
     <h1 class="hero-title">Preparen el auto de <span class="accent">Colapinto</span>.</h1>
-    <p class="hero-sub">Sos el nuevo ingeniero industrial del box. El equipo necesita organizar la construcción del auto antes de la clasificación — y vos decidís en qué orden se hacen las tareas.</p>
+    <p class="hero-sub">Sos el nuevo ingeniero industrial del box. Necesitás organizar la construcción del auto antes de la clasificación — vos decidís en qué orden se hacen las tareas.</p>
 
     <div class="crew">
       <div class="avatar">
@@ -336,12 +347,14 @@ body{
     <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="openModal('modal-table')">Ver tabla</button>
   </div>
 
+  <div class="rotate-hint">🔄📱 Para mejor experiencia, girá el celular en horizontal.</div>
+
   <div class="banner" id="banner"></div>
 
   <div class="board-wrap">
     <div class="board" id="board"><!-- filled by JS --></div>
   </div>
-  <p class="legend-hint">Tocá una celda vacía en la fila de una tarea para ubicarla (ocupa su duración en días). Tocala de nuevo para sacarla.</p>
+  <p class="legend-hint">Arrastrá cada bloque con el dedo (o el mouse) hasta el día donde querés ubicarlo. Tocalo sin arrastrar para sacarlo.</p>
 </div>
 
 <div class="footer-actions" id="footerActions" style="display:none;">
@@ -380,10 +393,10 @@ body{
   <div class="modal">
     <span class="eyebrow">Briefing de boxes</span>
     <h2>Clasificación en Buenos Aires</h2>
-    <p>El equipo quiere presentar el auto de Franco Colapinto a tiempo para la clasificación. Para eso hay que entregarle a la ingeniera jefa un plan de construcción realista.</p>
-    <p>La clasificación es en <b>15 días</b>. Ayudá al equipo a llegar a tiempo — y si podés, ganale al récord de boxes.</p>
+    <p>Querés presentar el auto de Franco Colapinto a tiempo para la clasificación. Para eso tenés que entregarle a la ingeniera jefa un plan de construcción realista.</p>
+    <p>La clasificación es en <b>15 días</b>. Llegá a tiempo — y si podés, ganale al récord de boxes.</p>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="closeModal('modal-mission');startGame()">Vamos, equipo</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-mission');startGame()">Vamos, arrancá</button>
     </div>
   </div>
 </div>
@@ -411,7 +424,8 @@ body{
       <div class="stat"><div class="n" id="statDays">-</div><div class="l">Días usados</div></div>
       <div class="stat"><div class="n" id="statOptimal">11</div><div class="l">Récord de boxes</div></div>
       <div class="stat"><div class="n" id="statTime">-</div><div class="l">Tiempo real jugado</div></div>
-      <div class="stat"><div class="n" id="statPoints">-</div><div class="l">Puntos para el marcador</div></div>
+      <div class="stat"><div class="n" id="statErrors">-</div><div class="l">Intentos con error</div></div>
+      <div class="stat wide"><div class="n" id="statPoints">-</div><div class="l">Puntos para el marcador</div></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="closeModal('modal-result');resetBoard()">Reintentar</button>
@@ -442,6 +456,8 @@ const TASKS = [
 ];
 
 let placements = {}; // id -> startDay (1-indexed) or null
+let errorAttempts = 0;
+const PENALTY_PER_ERROR = 5;
 
 // ---- real-time stopwatch (the "reloj que te va a torturar") ----
 let clockSeconds = 0;
@@ -531,7 +547,6 @@ function buildBoard(){
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.id = `cell-${t.id}-${d}`;
-      cell.onclick = ()=>handleCellClick(t.id, d);
       rowCells.appendChild(cell);
     }
     board.appendChild(rowCells);
@@ -540,20 +555,50 @@ function buildBoard(){
   renderPlacements();
 }
 
-function handleCellClick(taskId, day){
-  const t = taskById(taskId);
-  if(placements[taskId] != null){
-    // clicking anywhere on its own row removes it
-    placements[taskId] = null;
+function makeDraggable(el, taskId){
+  let dragging = false, moved = false, startClientX = 0, startLeft = 0;
+
+  el.addEventListener('pointerdown', (e)=>{
+    dragging = true;
+    moved = false;
+    startClientX = e.clientX;
+    startLeft = parseFloat(el.style.left) || 0;
+    try{ el.setPointerCapture(e.pointerId); }catch(err){}
+    el.classList.add('dragging');
+  });
+
+  el.addEventListener('pointermove', (e)=>{
+    if(!dragging) return;
+    const dx = e.clientX - startClientX;
+    if(Math.abs(dx) > 4) moved = true;
+    const t = taskById(taskId);
+    const maxLeft = (DAYS - t.dur)*46 + 2;
+    let newLeft = startLeft + dx;
+    newLeft = Math.max(2, Math.min(maxLeft, newLeft));
+    el.style.left = newLeft + 'px';
+  });
+
+  function endDrag(){
+    if(!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    if(!moved){
+      // plain tap: remove if it was placed, ignore if it was already unplaced
+      if(placements[taskId] != null){
+        placements[taskId] = null;
+        renderPlacements();
+      }
+      return;
+    }
+    const t = taskById(taskId);
+    const left = parseFloat(el.style.left) || 0;
+    let day = Math.round((left-2)/46) + 1;
+    day = Math.max(1, Math.min(DAYS - t.dur + 1, day));
+    placements[taskId] = day;
     renderPlacements();
-    return;
   }
-  if(day + t.dur - 1 > DAYS){
-    flashBanner('err', `${t.name} no entra a partir del día ${day} (dura ${t.dur} días). Probá más a la izquierda.`);
-    return;
-  }
-  placements[taskId] = day;
-  renderPlacements();
+  el.addEventListener('pointerup', endDrag);
+  el.addEventListener('pointercancel', endDrag);
 }
 
 function renderPlacements(){
@@ -561,27 +606,28 @@ function renderPlacements(){
     const row = document.getElementById('row-'+t.id);
     if(!row) return;
     row.classList.remove('error');
-    // clear
-    for(let d=1; d<=DAYS; d++){
-      const cell = document.getElementById(`cell-${t.id}-${d}`);
-      cell.innerHTML = '';
-      cell.classList.remove('filled');
+
+    let block = document.getElementById('block-'+t.id);
+    if(!block){
+      block = document.createElement('div');
+      block.id = 'block-'+t.id;
+      block.className = 'block';
+      block.style.background = t.color;
+      block.style.width = (t.dur*46 - 4) + 'px';
+      block.innerHTML = `${t.id}<small>${t.dur}d</small>`;
+      row.appendChild(block);
+      makeDraggable(block, t.id);
     }
     const start = placements[t.id];
-    if(start == null) return;
-    const cell = document.getElementById(`cell-${t.id}-${start}`);
-    cell.classList.add('filled');
-    const block = document.createElement('div');
-    block.className = 'block';
-    block.style.background = t.color;
-    block.style.width = (t.dur*46 - 4) + 'px';
-    block.innerHTML = `${t.id}<small>${t.dur}d</small>`;
-    cell.appendChild(block);
+    const day = start == null ? 1 : start;
+    block.style.left = ((day-1)*46 + 2) + 'px';
+    block.classList.toggle('unplaced', start == null);
   });
 }
 
 function resetBoard(){
   placements = {};
+  errorAttempts = 0;
   renderPlacements();
   hideBanner();
   startClock();
@@ -625,7 +671,10 @@ function validate(){
 
 function tryRun(){
   const makespan = validate();
-  if(makespan == null) return;
+  if(makespan == null){
+    errorAttempts++;
+    return;
+  }
   runLightsThenSim(makespan);
 }
 
@@ -700,8 +749,11 @@ function showResult(makespan){
   const ss = String(clockSeconds%60).padStart(2,'0');
   document.getElementById('statTime').textContent = mm+':'+ss;
 
-  const points = stars===3 ? 30 : stars===2 ? 20 : 10;
+  const basePoints = stars===3 ? 30 : stars===2 ? 20 : 10;
+  const penalty = Math.min(basePoints, errorAttempts * PENALTY_PER_ERROR);
+  const points = basePoints - penalty;
   document.getElementById('statPoints').textContent = points;
+  document.getElementById('statErrors').textContent = errorAttempts > 0 ? `${errorAttempts} (-${penalty}pts)` : '0';
   // shared score key read by the Exploradores Industriales hub
   try{ localStorage.setItem('exploradores_score_racing', String(points)); }catch(e){}
 
@@ -713,7 +765,7 @@ function showResult(makespan){
     eyebrow.textContent = 'Clasificación asegurada';
     if(makespan<=OPTIMAL){
       title.textContent = '¡Récord de boxes, Franco corre!';
-      msg.textContent = `Armaste el auto en ${makespan} días, igualando el mejor tiempo posible del equipo. La ingeniera jefa está impresionada — así se planifica un proyecto.`;
+      msg.textContent = `Armaste el auto en ${makespan} días, igualando el mejor tiempo posible. La ingeniera jefa está impresionada — así se planifica un proyecto.`;
     } else {
       title.textContent = '¡Llegaste a tiempo para la clasificación!';
       msg.textContent = `El auto quedó listo en ${makespan} días, antes de los ${DEADLINE} días límite. El récord del box es de ${OPTIMAL} días — reordenando algunas tareas en paralelo podés bajar el tiempo.`;
@@ -722,6 +774,9 @@ function showResult(makespan){
     eyebrow.textContent = 'Se complicó el cronograma';
     title.textContent = 'Franco se queda sin clasificar...';
     msg.textContent = `El plan tardó ${makespan} días, más de los ${DEADLINE} disponibles. Revisá qué tareas podrían hacerse en paralelo en vez de una detrás de la otra.`;
+  }
+  if(errorAttempts > 0){
+    msg.textContent += ` Tuviste ${errorAttempts} intento${errorAttempts>1?'s':''} con error antes de lograrlo, así que se descontaron ${penalty} puntos.`;
   }
   openModal('modal-result');
 }
